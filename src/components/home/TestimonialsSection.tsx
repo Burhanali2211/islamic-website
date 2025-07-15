@@ -26,23 +26,24 @@ export function TestimonialsSection() {
   ];
 
   return (
-    <section className="section-padding bg-surface-elevated">
-      <div className="container-custom">
+    <section className="py-12 sm:py-16 bg-gray-50 dark:bg-gray-900/50">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-8 sm:mb-12 lg:mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
             Community Voices
           </h2>
-          <p className="text-lg text-secondary max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto px-2 sm:px-0 leading-relaxed">
             Hear from students, scholars, and community members who have benefited from our Islamic educational resources and programs.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Mobile-optimized grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {testimonials.map((testimonial, index) => (
             <motion.div
               key={index}
@@ -50,26 +51,26 @@ export function TestimonialsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.15 }}
-              className="authentic-card p-8 rounded-2xl text-center hover:shadow-medium transition-all duration-300"
+              className="glass-card p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl text-center hover:scale-105 transition-all duration-300"
             >
-              <div className="mb-6">
-                <Quote className="h-8 w-8 text-emerald-600 dark:text-emerald-400 mx-auto mb-4 opacity-60" />
+              <div className="mb-4 sm:mb-6">
+                <Quote className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 dark:text-emerald-400 mx-auto mb-3 sm:mb-4 opacity-60" />
                 <IslamicAvatar name={testimonial.name} size="lg" className="mx-auto" />
               </div>
 
-              <div className="flex justify-center text-gold-500 mb-6">
+              <div className="flex justify-center text-yellow-500 mb-4 sm:mb-6">
                 {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-current" />
+                  <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
                 ))}
               </div>
 
-              <blockquote className="text-secondary italic mb-6 flex-grow leading-relaxed">
+              <blockquote className="text-gray-600 dark:text-gray-400 italic mb-4 sm:mb-6 flex-grow leading-relaxed text-sm sm:text-base">
                 "{testimonial.quote}"
               </blockquote>
 
               <div>
-                <h4 className="font-semibold text-primary mb-1">{testimonial.name}</h4>
-                <p className="text-accent text-sm font-medium">{testimonial.role}</p>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm sm:text-base">{testimonial.name}</h4>
+                <p className="text-green-600 dark:text-green-400 text-xs sm:text-sm font-medium">{testimonial.role}</p>
               </div>
             </motion.div>
           ))}

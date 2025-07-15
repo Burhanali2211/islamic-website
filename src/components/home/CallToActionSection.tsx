@@ -23,15 +23,15 @@ export function CallToActionSection() {
           <p className="text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-2">
             Access thousands of authentic Islamic books, join our learning community, and embark on a journey of spiritual and intellectual growth with IDARAH WALI UL ASER.
           </p>
-          <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:gap-4 justify-center items-center">
-            <Link to="/library" className="w-full sm:w-auto">
-              <button className="bg-white text-green-600 px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:bg-green-50 transition-all duration-300 flex items-center justify-center space-x-2 w-full sm:w-auto text-sm sm:text-base min-h-[48px] touch-manipulation">
+          <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:gap-4 justify-center items-stretch sm:items-center max-w-md sm:max-w-none mx-auto">
+            <Link to="/library" className="flex-1 sm:flex-none">
+              <button className="bg-white text-green-600 px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:bg-green-50 transition-all duration-300 flex items-center justify-center space-x-2 w-full sm:w-auto text-sm sm:text-base min-h-[48px] touch-manipulation hover:scale-105">
                 <span>Explore Maktabah</span>
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </Link>
-            <Link to="/about" className="w-full sm:w-auto">
-              <button className="border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:bg-white hover:text-green-600 transition-all duration-300 w-full sm:w-auto text-sm sm:text-base min-h-[48px] touch-manipulation">
+            <Link to="/about" className="flex-1 sm:flex-none">
+              <button className="border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:bg-white hover:text-green-600 transition-all duration-300 w-full sm:w-auto text-sm sm:text-base min-h-[48px] touch-manipulation hover:scale-105">
                 Learn About Us
               </button>
             </Link>

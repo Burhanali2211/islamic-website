@@ -17,8 +17,8 @@ export function PromotionalBanner() {
       <div className="absolute top-1/4 right-20 w-12 h-12 border border-white/20 rotate-45 animate-pulse delay-500"></div>
       <div className="absolute bottom-1/4 left-20 w-12 h-12 border border-white/20 rotate-45 animate-pulse delay-1500"></div>
 
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div className="container mx-auto px-4 sm:px-6 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Content Side */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -27,58 +27,58 @@ export function PromotionalBanner() {
             transition={{ duration: 0.7 }}
             className="text-white"
           >
-            <div className="mb-6">
-              <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium mb-4">
+            <div className="mb-6 sm:mb-8">
+              <span className="inline-block px-3 py-1.5 sm:px-4 sm:py-2 bg-white/20 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium mb-3 sm:mb-4">
                 ✨ Discover Islamic Knowledge
               </span>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight">
                 Join Our Digital
                 <span className="block bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
                   Maktabah
                 </span>
               </h2>
-              <p className="text-lg text-green-100 mb-8 leading-relaxed">
-                Access thousands of authentic Islamic books, join our learning community, 
+              <p className="text-sm sm:text-base lg:text-lg text-green-100 mb-6 sm:mb-8 leading-relaxed">
+                Access thousands of authentic Islamic books, join our learning community,
                 and embark on a journey of spiritual and intellectual growth with IDARAH WALI UL ASER.
               </p>
             </div>
 
-            {/* Features */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+            {/* Features - Mobile optimized grid */}
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
               <div className="text-center">
-                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <BookOpen className="h-6 w-6 text-white" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                  <BookOpen className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <div className="text-2xl font-bold mb-1">1000+</div>
-                <div className="text-green-100 text-sm">Islamic Books</div>
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold mb-1">1000+</div>
+                <div className="text-green-100 text-xs sm:text-sm">Islamic Books</div>
               </div>
               <div className="text-center">
-                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <Users className="h-6 w-6 text-white" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                  <Users className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <div className="text-2xl font-bold mb-1">2.8K+</div>
-                <div className="text-green-100 text-sm">Students</div>
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold mb-1">2.8K+</div>
+                <div className="text-green-100 text-xs sm:text-sm">Students</div>
               </div>
               <div className="text-center">
-                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <Star className="h-6 w-6 text-white" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                  <Star className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <div className="text-2xl font-bold mb-1">4.8</div>
-                <div className="text-green-100 text-sm">Rating</div>
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold mb-1">4.8</div>
+                <div className="text-green-100 text-xs sm:text-sm">Rating</div>
               </div>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/library">
-                <button className="w-full sm:w-auto bg-white text-green-600 px-8 py-4 rounded-xl font-semibold hover:bg-green-50 transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center space-x-2">
-                  <BookOpen className="h-5 w-5" />
+            {/* CTA Buttons - Mobile optimized */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Link to="/library" className="flex-1 sm:flex-none">
+                <button className="w-full sm:w-auto bg-white text-green-600 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold hover:bg-green-50 transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center space-x-2 text-sm sm:text-base min-h-[48px] touch-manipulation">
+                  <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>Explore Maktabah</span>
-                  <ArrowRight className="h-5 w-5" />
+                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               </Link>
-              <Link to="/about">
-                <button className="w-full sm:w-auto border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-green-600 transition-all duration-300 hover:scale-105">
+              <Link to="/about" className="flex-1 sm:flex-none">
+                <button className="w-full sm:w-auto border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold hover:bg-white hover:text-green-600 transition-all duration-300 hover:scale-105 text-sm sm:text-base min-h-[48px] touch-manipulation">
                   Learn About Us
                 </button>
               </Link>

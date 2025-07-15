@@ -199,6 +199,45 @@ html {
   .text-caption-responsive {
     @apply text-xs sm:text-sm md:text-base;
   }
+
+  /* Mobile-first spacing utilities */
+  .spacing-mobile-section {
+    @apply py-12 sm:py-16 lg:py-20;
+  }
+
+  .spacing-mobile-container {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .spacing-mobile-grid {
+    @apply gap-4 sm:gap-6 lg:gap-8;
+  }
+
+  .spacing-mobile-card {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+
+  /* Mobile-optimized button utilities */
+  .btn-mobile-touch {
+    @apply min-h-[48px] touch-manipulation;
+  }
+
+  .btn-mobile-responsive {
+    @apply px-4 py-3 sm:px-6 sm:py-3 lg:px-8 lg:py-4 text-sm sm:text-base;
+  }
+
+  /* Mobile-first grid utilities */
+  .grid-mobile-1-2-3 {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .grid-mobile-1-2-4 {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+  }
+
+  .grid-mobile-2-3-4 {
+    @apply grid-cols-2 sm:grid-cols-3 lg:grid-cols-4;
+  }
 }
 
 /* Custom Scrollbar */

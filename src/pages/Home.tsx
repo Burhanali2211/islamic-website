@@ -146,13 +146,14 @@ export function Home() {
                 transition={{ delay: index * 0.1, duration: 0.5 }}
                 className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-3xl hover:scale-105 transition-all duration-300 hover:-translate-y-2 group border border-white/20 dark:border-gray-700/30 overflow-hidden"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 space-y-3 sm:space-y-0">
-                  <div className="flex-1 text-center sm:text-left">
+                {/* Mobile-optimized layout: Always center content on mobile, then align left on larger screens */}
+                <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:justify-between sm:text-left mb-3 sm:mb-4 space-y-3 sm:space-y-0">
+                  <div className="flex-1 order-2 sm:order-1">
                     <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">{stat.label}</p>
                     <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{stat.description}</p>
                   </div>
-                  <div className={`p-2.5 sm:p-3 rounded-xl bg-gradient-to-br ${stat.color} shadow-lg group-hover:shadow-xl transition-shadow mx-auto sm:mx-0`}>
+                  <div className={`p-2.5 sm:p-3 rounded-xl bg-gradient-to-br ${stat.color} shadow-lg group-hover:shadow-xl transition-shadow order-1 sm:order-2 flex-shrink-0`}>
                     <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
                 </div>
