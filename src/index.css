@@ -1,0 +1,183 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Apply Lexend font globally with Islamic typography principles */
+body {
+  font-family: 'Lexend', 'Amiri', 'Noto Sans Arabic', sans-serif;
+  /* The background is now handled by the AnimatedBackground component */
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+}
+
+/* Enhanced Islamic Glass Morphism Styles */
+@layer utilities {
+  .glass-card {
+    @apply backdrop-blur-2xl bg-white/70 dark:bg-gray-900/70 border border-white/30 dark:border-gray-700/40 shadow-2xl shadow-green-500/5 dark:shadow-green-400/5;
+    background-image: radial-gradient(circle at 20% 80%, rgba(34, 197, 94, 0.05) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+  }
+
+  .glass-input {
+    @apply backdrop-blur-lg bg-white/60 dark:bg-gray-950/60 border border-white/30 dark:border-gray-700/40 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 shadow-lg shadow-green-500/5;
+  }
+
+  .glass-header {
+    @apply backdrop-blur-xl bg-white/85 dark:bg-gray-950/85 border-b border-white/20 dark:border-gray-700/50;
+    background-image: linear-gradient(135deg, rgba(34, 197, 94, 0.02) 0%, rgba(59, 130, 246, 0.02) 100%);
+  }
+
+  .glass-sidebar {
+    @apply backdrop-blur-2xl bg-white/60 dark:bg-gray-950/60 border-r border-white/20 dark:border-gray-700/50;
+    background-image: linear-gradient(180deg, rgba(34, 197, 94, 0.03) 0%, rgba(59, 130, 246, 0.03) 100%);
+  }
+
+  .glass-footer {
+    @apply backdrop-blur-xl bg-white/85 dark:bg-gray-950/85 border-t border-white/20 dark:border-gray-700/50;
+    background-image: linear-gradient(135deg, rgba(34, 197, 94, 0.02) 0%, rgba(59, 130, 246, 0.02) 100%);
+  }
+}
+
+/* Islamic Design Patterns */
+@layer utilities {
+  .islamic-pattern {
+    background-image:
+      radial-gradient(circle at 25% 25%, rgba(34, 197, 94, 0.1) 0%, transparent 25%),
+      radial-gradient(circle at 75% 75%, rgba(59, 130, 246, 0.1) 0%, transparent 25%),
+      radial-gradient(circle at 75% 25%, rgba(212, 175, 55, 0.1) 0%, transparent 25%),
+      radial-gradient(circle at 25% 75%, rgba(34, 197, 94, 0.1) 0%, transparent 25%);
+    background-size: 40px 40px;
+  }
+
+  .islamic-gradient {
+    background: linear-gradient(135deg,
+      rgba(34, 197, 94, 0.1) 0%,
+      rgba(59, 130, 246, 0.1) 50%,
+      rgba(212, 175, 55, 0.1) 100%);
+  }
+
+  .islamic-border {
+    border-image: linear-gradient(45deg, #22c55e, #3b82f6, #d4af37) 1;
+  }
+
+  .text-islamic-gradient {
+    background: linear-gradient(135deg, #22c55e, #3b82f6, #d4af37);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* Refined Neumorphism Styles */
+@layer utilities {
+  .neomorph-button {
+    @apply shadow-[4px_4px_8px_rgba(0,0,0,0.04),-4px_-4px_8px_rgba(255,255,255,0.7)] dark:shadow-[4px_4px_8px_rgba(0,0,0,0.2),-4px_-4px_8px_rgba(255,255,255,0.02)] 
+           bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 
+           hover:shadow-[3px_3px_6px_rgba(0,0,0,0.04),-3px_-3px_6px_rgba(255,255,255,0.7)] 
+           dark:hover:shadow-[3px_3px_6px_rgba(0,0,0,0.2),-3px_-3px_6px_rgba(255,255,255,0.02)]
+           transition-all duration-200;
+  }
+  
+  .neomorph-inset {
+    @apply shadow-[inset_2px_2px_4px_rgba(0,0,0,0.04),inset_-2px_-2px_4px_rgba(255,255,255,0.7)] 
+           dark:shadow-[inset_2px_2px_4px_rgba(0,0,0,0.2),inset_-2px_-2px_4px_rgba(255,255,255,0.02)]
+           bg-gray-100 dark:bg-gray-800;
+  }
+  
+  .neomorph-card {
+    @apply shadow-[6px_6px_12px_rgba(0,0,0,0.04),-6px_-6px_12px_rgba(255,255,255,0.7)] 
+           dark:shadow-[6px_6px_12px_rgba(0,0,0,0.2),-6px_-6px_12px_rgba(255,255,255,0.02)]
+           bg-gray-100 dark:bg-gray-800;
+  }
+  
+  .neomorph-icon {
+    @apply shadow-[3px_3px_6px_rgba(0,0,0,0.04),-3px_-3px_6px_rgba(255,255,255,0.7)] 
+           dark:shadow-[3px_3px_6px_rgba(0,0,0,0.2),-3px_-3px_6px_rgba(255,255,255,0.02)]
+           bg-gray-100 dark:bg-gray-800;
+  }
+  
+  .neomorph-active {
+    @apply shadow-[inset_3px_3px_6px_rgba(0,0,0,0.04),inset_-3px_-3px_6px_rgba(255,255,255,0.7)] 
+           dark:shadow-[inset_3px_3px_6px_rgba(0,0,0,0.2),inset_-3px_-3px_6px_rgba(255,255,255,0.02)];
+  }
+}
+
+/* Additional Styles */
+@layer utilities {
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #16a34a;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #15803d;
+}
+
+/* Smooth transitions */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Dark mode improvements */
+.dark {
+  color-scheme: dark;
+}
+
+/* RTL Support */
+html[dir="rtl"] body {
+  text-align: right;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* Page transition placeholder */
+.page-transition {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Keyframes for background animation */
+@keyframes backgroundPan {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
