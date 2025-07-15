@@ -62,31 +62,31 @@ export function Sidebar() {
         <Link
           key={item.path}
           to={item.path}
-          className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
-            isActive 
-              ? 'neomorph-active bg-gradient-to-r from-green-500/20 to-blue-500/20 text-green-600 dark:text-green-400' 
-              : 'hover:neomorph-hover text-gray-700 dark:text-gray-300'
+          className={`flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-3 sm:py-3.5 rounded-xl transition-all duration-200 group touch-manipulation min-h-[44px] ${
+            isActive
+              ? 'neomorph-active bg-gradient-to-r from-green-500/20 to-blue-500/20 text-green-600 dark:text-green-400'
+              : 'hover:neomorph-hover text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'
           }`}
         >
-          <Icon className={`h-5 w-5 ${isActive ? 'text-green-600 dark:text-green-400' : ''}`} />
-          <span className="font-medium">{item.label}</span>
+          <Icon className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isActive ? 'text-green-600 dark:text-green-400' : ''}`} />
+          <span className="font-medium text-sm sm:text-base truncate">{item.label}</span>
         </Link>
       );
     });
   };
 
   return (
-    <aside className="w-64 glass-sidebar backdrop-blur-xl bg-white/60 dark:bg-gray-900/60 border-r border-white/20 dark:border-gray-700/30 h-screen sticky top-0 overflow-y-auto">
-      <div className="p-6">
-        <Link to="/" className="flex items-center space-x-3 mb-8">
-            <div className="neomorph-icon p-2 rounded-xl">
-              <BookOpen className="h-8 w-8 text-green-600 dark:text-green-400" />
+    <aside className="w-64 lg:w-72 xl:w-80 glass-sidebar backdrop-blur-xl bg-white/60 dark:bg-gray-900/60 border-r border-white/20 dark:border-gray-700/30 h-screen sticky top-0 overflow-y-auto">
+      <div className="p-4 sm:p-6">
+        <Link to="/" className="flex items-center space-x-2 sm:space-x-3 mb-6 sm:mb-8">
+            <div className="neomorph-icon p-1.5 sm:p-2 rounded-xl">
+              <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 dark:text-green-400" />
             </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
               Maktabah
             </h1>
         </Link>
-        <nav className="space-y-2">
+        <nav className="space-y-1 sm:space-y-2">
           {renderMenuItems(navItems)}
         </nav>
       </div>

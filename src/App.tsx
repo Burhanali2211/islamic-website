@@ -108,7 +108,7 @@ function App() {
   return (
     <AppProvider>
       <Router>
-        <div className="min-h-screen text-gray-800 dark:text-gray-200 font-sans">
+        <div className="min-h-screen text-gray-800 dark:text-gray-200 font-sans overflow-x-hidden">
           <AnimatedBackground />
           <Suspense fallback={<LoadingSpinner />}>
             <AnimatedRoutes />

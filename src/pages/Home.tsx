@@ -59,11 +59,11 @@ export function Home() {
           <div className="absolute inset-0 islamic-pattern opacity-20"></div>
         </div>
 
-        {/* Decorative Islamic Elements */}
-        <div className="absolute top-10 left-10 w-20 h-20 border-2 border-gold/30 rounded-full animate-pulse"></div>
-        <div className="absolute bottom-10 right-10 w-16 h-16 border-2 border-gold/30 rounded-full animate-pulse delay-1000"></div>
-        <div className="absolute top-1/4 right-20 w-12 h-12 border border-gold/20 rotate-45 animate-pulse delay-500"></div>
-        <div className="absolute bottom-1/4 left-20 w-12 h-12 border border-gold/20 rotate-45 animate-pulse delay-1500"></div>
+        {/* Decorative Islamic Elements - Hidden on mobile to prevent overflow */}
+        <div className="hidden sm:block absolute top-10 left-10 w-16 h-16 sm:w-20 sm:h-20 border-2 border-gold/30 rounded-full animate-pulse"></div>
+        <div className="hidden sm:block absolute bottom-10 right-10 w-12 h-12 sm:w-16 sm:h-16 border-2 border-gold/30 rounded-full animate-pulse delay-1000"></div>
+        <div className="hidden md:block absolute top-1/4 right-20 w-8 h-8 sm:w-12 sm:h-12 border border-gold/20 rotate-45 animate-pulse delay-500"></div>
+        <div className="hidden md:block absolute bottom-1/4 left-20 w-8 h-8 sm:w-12 sm:h-12 border border-gold/20 rotate-45 animate-pulse delay-1500"></div>
 
         <div className="container mx-auto px-4 sm:px-6 text-center relative z-10">
           <motion.div
@@ -144,16 +144,16 @@ export function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
-                className="glass-card p-6 rounded-3xl hover:scale-105 transition-all duration-300 hover:-translate-y-2 group border border-white/20 dark:border-gray-700/30"
+                className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-3xl hover:scale-105 transition-all duration-300 hover:-translate-y-2 group border border-white/20 dark:border-gray-700/30 overflow-hidden"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">{stat.label}</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 space-y-3 sm:space-y-0">
+                  <div className="flex-1 text-center sm:text-left">
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">{stat.label}</p>
+                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{stat.description}</p>
                   </div>
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} shadow-lg group-hover:shadow-xl transition-shadow`}>
-                    <Icon className="h-6 w-6 text-white" />
+                  <div className={`p-2.5 sm:p-3 rounded-xl bg-gradient-to-br ${stat.color} shadow-lg group-hover:shadow-xl transition-shadow mx-auto sm:mx-0`}>
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">

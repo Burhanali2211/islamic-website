@@ -8,36 +8,31 @@ export function CallToActionSection() {
   const { state } = useApp();
 
   return (
-    <section className="py-20">
-      <div className="container mx-auto px-6">
+    <section className="py-12 sm:py-16 lg:py-20">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-3xl p-12 text-center"
+          className="bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 text-center overflow-hidden"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Join Our Islamic Knowledge Journey
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 px-2">
+            Join Our Digital Maktabah
           </h2>
-          <p className="text-lg mb-8 max-w-2xl mx-auto">
-            Become part of our growing community dedicated to preserving and sharing authentic Islamic knowledge and the teachings of Imam Hussain (AS).
+          <p className="text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-2">
+            Access thousands of authentic Islamic books, join our learning community, and embark on a journey of spiritual and intellectual growth with IDARAH WALI UL ASER.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/library">
-              <button className="bg-white text-green-600 px-8 py-4 rounded-2xl font-semibold hover:bg-green-50 transition-colors flex items-center justify-center space-x-2 w-full sm:w-auto">
+          <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:gap-4 justify-center items-center">
+            <Link to="/library" className="w-full sm:w-auto">
+              <button className="bg-white text-green-600 px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:bg-green-50 transition-all duration-300 flex items-center justify-center space-x-2 w-full sm:w-auto text-sm sm:text-base min-h-[48px] touch-manipulation">
                 <span>Explore Maktabah</span>
-                <ArrowRight className="h-5 w-5" />
+                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </Link>
-            <Link to="/learning-center">
-              <button className="bg-green-700 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-green-800 transition-colors w-full sm:w-auto">
-                Join Maktab Wali Ul Aser
-              </button>
-            </Link>
-            <Link to="/contact">
-              <button className="border-2 border-white text-white px-8 py-4 rounded-2xl font-semibold hover:bg-white hover:text-green-600 transition-colors w-full sm:w-auto">
-                Contact Us
+            <Link to="/about" className="w-full sm:w-auto">
+              <button className="border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:bg-white hover:text-green-600 transition-all duration-300 w-full sm:w-auto text-sm sm:text-base min-h-[48px] touch-manipulation">
+                Learn About Us
               </button>
             </Link>
           </div>

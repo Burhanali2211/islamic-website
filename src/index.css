@@ -8,6 +8,32 @@ body {
   /* The background is now handled by the AnimatedBackground component */
   line-height: 1.7;
   letter-spacing: 0.01em;
+  overflow-x: hidden;
+}
+
+/* Prevent horizontal overflow on all elements */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+/* Container utilities for proper mobile layout */
+@layer utilities {
+  .container-mobile {
+    @apply w-full max-w-none px-4 sm:max-w-screen-sm sm:px-6 md:max-w-screen-md lg:max-w-screen-lg lg:px-8 xl:max-w-screen-xl 2xl:max-w-screen-2xl mx-auto;
+  }
+
+  .prevent-overflow {
+    @apply overflow-hidden;
+  }
+
+  .text-break {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
 }
 
 /* Enhanced Islamic Glass Morphism Styles */

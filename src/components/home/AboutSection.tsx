@@ -6,9 +6,9 @@ import { OptimizedImage } from '../ui/OptimizedImage';
 
 export function AboutSection() {
   return (
-    <section className="section-padding bg-surface">
-      <div className="container-custom">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+    <section className="py-12 sm:py-16 lg:py-20 bg-gray-50 dark:bg-gray-900/50">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -21,11 +21,11 @@ export function AboutSection() {
               <div className="absolute -inset-4 bg-gradient-to-r from-green-100 to-blue-100 dark:from-green-900/20 dark:to-blue-900/20 rounded-3xl blur-3xl opacity-30"></div>
 
               {/* Main image container */}
-              <div className="relative bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700">
+              <div className="relative bg-white dark:bg-gray-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl border border-gray-200 dark:border-gray-700">
                 <OptimizedImage
                   src="/web-banner.png"
                   alt="IDARAH WALI UL ASER - Islamic Educational Institution"
-                  className="w-full h-96 lg:h-[500px] object-contain rounded-2xl"
+                  className="w-full h-64 sm:h-80 md:h-96 lg:h-[500px] object-contain rounded-xl sm:rounded-2xl"
                 />
 
                 {/* Floating decorative elements */}
@@ -41,46 +41,48 @@ export function AboutSection() {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="order-1 lg:order-2"
           >
-            <div className="space-y-8">
+            <div className="space-y-6 sm:space-y-8">
               <div>
-                <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary mb-6">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 text-center lg:text-left">
                   About IDARAH WALI UL ASER
                 </h2>
-                <p className="text-lg text-secondary leading-relaxed">
+                <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 leading-relaxed text-center lg:text-left">
                   IDARAH WALI UL ASER is a religious organization founded in 2005 in Banpora Chattergam, Kashmir.
                   We are dedicated to preserving and sharing the authentic teachings of Islam, particularly the
                   noble message and sacrifices of Imam Hussain (AS).
                 </p>
               </div>
 
-              <div className="space-y-6">
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0 mt-1">
+              <div className="space-y-4 sm:space-y-6">
+                <div className="flex flex-col sm:flex-row items-start space-y-3 sm:space-y-0 sm:space-x-4 text-center sm:text-left">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0 sm:mt-1">
                     <Target className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-primary mb-2">Our Mission</h4>
-                    <p className="text-secondary">To enlighten people with the true knowledge of Imam Hussain (AS) and his sacred mission, bringing innovative and authentic Islamic education to the youth of today.</p>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Our Mission</h4>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed">To enlighten people with the true knowledge of Imam Hussain (AS) and his sacred mission, bringing innovative and authentic Islamic education to the youth of today.</p>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 rounded-xl bg-gold-100 dark:bg-gold-900/30 flex items-center justify-center flex-shrink-0 mt-1">
-                    <Eye className="h-6 w-6 text-gold-600 dark:text-gold-400" />
+                <div className="flex flex-col sm:flex-row items-start space-y-3 sm:space-y-0 sm:space-x-4 text-center sm:text-left">
+                  <div className="w-12 h-12 rounded-xl bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0 sm:mt-1">
+                    <Eye className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-primary mb-2">Our Vision</h4>
-                    <p className="text-secondary">To become a leading center of Islamic knowledge and spiritual growth in Kashmir, creating a community where the teachings of Imam Hussain (AS) inspire compassion and justice.</p>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Our Vision</h4>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed">To become a leading center of Islamic knowledge and spiritual growth in Kashmir, creating a community where the teachings of Imam Hussain (AS) inspire compassion and justice.</p>
                   </div>
                 </div>
               </div>
 
-              <Link to="/about">
-                <button className="btn-primary flex items-center space-x-2">
-                  <span>Learn More</span>
-                  <ArrowRight className="h-5 w-5" />
-                </button>
-              </Link>
+              <div className="flex justify-center lg:justify-start">
+                <Link to="/about">
+                  <button className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-green-500/25 flex items-center space-x-2 text-sm sm:text-base">
+                    <span>Learn More</span>
+                    <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </button>
+                </Link>
+              </div>
             </div>
           </motion.div>
         </div>
