@@ -18,19 +18,19 @@ export function About() {
   const { state } = useApp();
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-12 lg:space-y-16">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 space-y-8 sm:space-y-12 lg:space-y-16">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-green-500 to-green-600 rounded-full mb-6 shadow-lg">
-          <BookOpen className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+        <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-r from-green-500 to-green-600 rounded-full mb-4 sm:mb-6 shadow-lg">
+          <BookOpen className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-white" />
         </div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-6">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-4 sm:mb-6 px-2">
           Haqiqat-e-Idarah Wali Ul Aser
         </h1>
-        <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
+        <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed px-2">
           IDARAH WALI UL ASER ek mazhabi tanẓeem hai jo 2005 mein Banpora Chattergam, Kashmir mein qāim kī gaī. Hum Islam kī aseel ta'līmāt, khāss taur par Imam Hussain (AS) kē paighām aur qurbāniyoṅ ko mahfūẓ rakhne aur phailāne kē liye waqf haiṅ. Filhāl ek mukhliṣ jamā'at kē zarī'e chalāyā jā rahā hai, hum digital library aur Maktab Wali Ul Aser donon chalāte haiṅ.
         </p>
       </motion.div>
@@ -39,7 +39,7 @@ export function About() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
       >
         <div className="glass-card p-6 sm:p-8 rounded-3xl text-center group hover:scale-105 transition-transform duration-300">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full mb-6 group-hover:shadow-lg transition-shadow">
