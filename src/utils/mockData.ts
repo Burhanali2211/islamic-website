@@ -3,6 +3,46 @@ import { Book, BookCategory, User } from '../types';
 
 const categories: BookCategory[] = ['quran', 'hadith', 'fiqh', 'history', 'tafsir', 'biography'];
 
+// Islamic book cover images by category
+const categoryImages = {
+  quran: [
+    'https://images.unsplash.com/photo-1564287531351-815cc2d36011?w=400&h=600&fit=crop', // Islamic calligraphy
+    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop', // Quran pages
+    'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=600&fit=crop', // Islamic art
+    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=600&fit=crop', // Arabic calligraphy
+  ],
+  hadith: [
+    'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=600&fit=crop', // Islamic manuscript
+    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop', // Arabic text
+    'https://images.unsplash.com/photo-1564287531351-815cc2d36011?w=400&h=600&fit=crop', // Calligraphy
+    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=600&fit=crop', // Islamic art
+  ],
+  fiqh: [
+    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop', // Islamic books
+    'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=600&fit=crop', // Manuscript
+    'https://images.unsplash.com/photo-1564287531351-815cc2d36011?w=400&h=600&fit=crop', // Arabic calligraphy
+    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=600&fit=crop', // Islamic design
+  ],
+  history: [
+    'https://images.unsplash.com/photo-1564287531351-815cc2d36011?w=400&h=600&fit=crop', // Historical Islamic art
+    'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=600&fit=crop', // Ancient manuscript
+    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop', // Historical text
+    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=600&fit=crop', // Islamic architecture
+  ],
+  tafsir: [
+    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop', // Quranic commentary
+    'https://images.unsplash.com/photo-1564287531351-815cc2d36011?w=400&h=600&fit=crop', // Arabic calligraphy
+    'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=600&fit=crop', // Islamic manuscript
+    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=600&fit=crop', // Islamic art
+  ],
+  biography: [
+    'https://images.unsplash.com/photo-1564287531351-815cc2d36011?w=400&h=600&fit=crop', // Islamic calligraphy
+    'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=600&fit=crop', // Historical manuscript
+    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop', // Islamic text
+    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=600&fit=crop', // Islamic design
+  ]
+};
+
 const bookTitles = {
   quran: ['Farhang Lugat e Quran', 'Quran Aur Mustashqeen', 'Qurani Qisse', 'Maarif Quran o Iteat', 'Al-Quran Al-Kareem'],
   hadith: ['Hadis e Ghadeer', 'Hadis e Saqlib Hanif Sanafi', 'Hadis Ghadeer ke Mukhtalif Asanid', 'Sahih Hadith Collections', 'Imam Hussain Ki Shahadat (Sahaih Hadith)'],
@@ -87,7 +127,7 @@ export function generateMockBooks(count = 48): Book[] {
       author: faker.helpers.arrayElement(authors),
       category,
       description: faker.helpers.arrayElement(bookDescriptions[category]),
-      coverImage: `https://picsum.photos/400/600?random=${faker.number.int({ min: 1, max: 1000 })}`,
+      coverImage: faker.helpers.arrayElement(categoryImages[category]),
       language: faker.helpers.arrayElement(['en', 'ar', 'ur']),
       fileUrl: faker.internet.url(),
       fileType: faker.helpers.arrayElement(['pdf', 'epub']),

@@ -32,7 +32,11 @@ export function PublicHeader() {
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
             <div className="bg-white dark:bg-gray-800 p-1.5 sm:p-2 rounded-lg shadow-sm">
-              <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
+              <img
+                src="/idarah wali ul aser logo.png"
+                alt="IDARAH WALI UL ASER Logo"
+                className="h-5 w-5 sm:h-6 sm:w-6 object-contain"
+              />
             </div>
             <h1 className="text-xs sm:text-sm md:text-xl font-bold bg-gradient-to-r from-green-600 to-green-700 dark:from-green-400 dark:to-green-500 bg-clip-text text-transparent">
               <span className="hidden sm:inline">IDARAH WALI UL ASER</span>

@@ -3,7 +3,11 @@ import { BookCard } from './BookCard';
 import { useApp } from '../context/AppContext';
 import { Book } from '../types';
 
-export function BookGrid() {
+interface BookGridProps {
+  viewMode?: 'grid' | 'list';
+}
+
+export function BookGrid({ viewMode = 'grid' }: BookGridProps) {
   const { state } = useApp();
 
   const filteredBooks = React.useMemo(() => {
@@ -53,10 +57,14 @@ export function BookGrid() {
     );
   }
 
+  const gridClasses = viewMode === 'grid'
+    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8"
+    : "flex flex-col space-y-6";
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+    <div className={gridClasses}>
       {filteredBooks.map((book) => (
-        <BookCard key={book.id} book={book} />
+        <BookCard key={book.id} book={book} viewMode={viewMode} />
       ))}
     </div>
   );

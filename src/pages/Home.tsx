@@ -9,6 +9,8 @@ import { DepartmentsSection } from '../components/home/DepartmentsSection';
 import { TestimonialsSection } from '../components/home/TestimonialsSection';
 import { CallToActionSection } from '../components/home/CallToActionSection';
 import { LatestNews } from '../components/home/LatestNews';
+import { EventGallery } from '../components/home/EventGallery';
+import { PromotionalBanner } from '../components/home/PromotionalBanner';
 
 export function Home() {
   const { state } = useApp();
@@ -185,6 +187,9 @@ export function Home() {
 
       <DepartmentsSection />
 
+      {/* Promotional Banner */}
+      <PromotionalBanner />
+
       {/* Featured Books */}
       <section className="container mx-auto px-6">
         <motion.div
@@ -212,8 +217,11 @@ export function Home() {
       
       <LatestNews />
 
+      {/* Event Gallery */}
+      <EventGallery />
+
       <TestimonialsSection />
-      
+
       <CallToActionSection />
     </motion.div>
   );

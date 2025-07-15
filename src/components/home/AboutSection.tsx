@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, Target, Eye } from 'lucide-react';
-import { IslamicLibraryVisual } from '../ui/IslamicLibraryVisual';
+import { OptimizedImage } from '../ui/OptimizedImage';
 
 export function AboutSection() {
   return (
@@ -16,7 +16,23 @@ export function AboutSection() {
             transition={{ duration: 0.7 }}
             className="order-2 lg:order-1"
           >
-            <IslamicLibraryVisual className="w-full h-96 lg:h-[500px]" />
+            <div className="relative">
+              {/* Decorative background elements */}
+              <div className="absolute -inset-4 bg-gradient-to-r from-green-100 to-blue-100 dark:from-green-900/20 dark:to-blue-900/20 rounded-3xl blur-3xl opacity-30"></div>
+
+              {/* Main image container */}
+              <div className="relative bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700">
+                <OptimizedImage
+                  src="/web-banner.png"
+                  alt="IDARAH WALI UL ASER - Islamic Educational Institution"
+                  className="w-full h-96 lg:h-[500px] object-contain rounded-2xl"
+                />
+
+                {/* Floating decorative elements */}
+                <div className="absolute -top-3 -right-3 w-6 h-6 bg-green-500 rounded-full animate-pulse"></div>
+                <div className="absolute -bottom-3 -left-3 w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-500"></div>
+              </div>
+            </div>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, x: 30 }}

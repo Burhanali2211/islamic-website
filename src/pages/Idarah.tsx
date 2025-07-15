@@ -4,10 +4,10 @@ import { Shield, Users, Award } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const leadershipTeam = [
-  { name: 'Aga Syed Mustafa Al Hussaini Al Hamadani', role: 'Founder (2005)', image: 'https://picsum.photos/200/200?random=20', quote: 'Founded with the intention to bring light of knowledge to people and enlighten them with the true message of Karbala.' },
-  { name: 'Shabir Ahmad', role: 'Chairman', image: 'https://picsum.photos/200/200?random=21', quote: 'Leading our mission to preserve and share the authentic teachings of Islam with dedication and commitment.' },
-  { name: 'Irfan Hussain', role: 'Supervisor', image: 'https://picsum.photos/200/200?random=22', quote: 'Ensuring our programs and activities maintain the highest standards of Islamic education and spiritual guidance.' },
-  { name: 'Mudasir Ahmad', role: 'Organizer', image: 'https://picsum.photos/200/200?random=23', quote: 'Coordinating our community programs and educational initiatives to serve the people of Kashmir.' },
+  { name: 'Aga Syed Mustafa Al Hussaini Al Hamadani', role: 'Founder (2005)', image: '/syed mustafa al-hussani al-hamadani.png', quote: 'Founded with the intention to bring light of knowledge to people and enlighten them with the true message of Karbala.' },
+  { name: 'Shabir Ahmad', role: 'Chairman', image: '/shabir ahmad.jpg', quote: 'Leading our mission to preserve and share the authentic teachings of Islam with dedication and commitment.' },
+  { name: 'Irfan Hussain', role: 'Supervisor', image: '/irfan.jpg', quote: 'Ensuring our programs and activities maintain the highest standards of Islamic education and spiritual guidance.' },
+  { name: 'Mudasir Ahmad', role: 'Organizer', image: '/mudasir.jpg', quote: 'Coordinating our community programs and educational initiatives to serve the people of Kashmir.' },
 ];
 
 export function Idarah() {

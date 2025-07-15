@@ -6,6 +6,46 @@ import { Book, BookCategory } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { faker } from '@faker-js/faker';
 
+// Islamic book cover images by category
+const categoryImages = {
+  quran: [
+    'https://images.unsplash.com/photo-1564287531351-815cc2d36011?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=600&fit=crop',
+  ],
+  hadith: [
+    'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1564287531351-815cc2d36011?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=600&fit=crop',
+  ],
+  fiqh: [
+    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1564287531351-815cc2d36011?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=600&fit=crop',
+  ],
+  history: [
+    'https://images.unsplash.com/photo-1564287531351-815cc2d36011?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=600&fit=crop',
+  ],
+  tafsir: [
+    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1564287531351-815cc2d36011?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=600&fit=crop',
+  ],
+  biography: [
+    'https://images.unsplash.com/photo-1564287531351-815cc2d36011?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=600&fit=crop',
+  ]
+};
+
 const bookSchema = z.object({
   title: z.string().min(3, 'Title is required'),
   author: z.string().min(3, 'Author is required'),
@@ -42,7 +82,7 @@ export function BookForm({ onClose, book }: BookFormProps) {
       const newBook: Book = {
         id: faker.string.uuid(),
         ...data,
-        coverImage: `https://picsum.photos/400/600?random=${faker.number.int({ min: 1, max: 1000 })}`,
+        coverImage: faker.helpers.arrayElement(categoryImages[data.category]),
         language: 'en',
         fileUrl: faker.internet.url(),
         fileType: 'pdf',

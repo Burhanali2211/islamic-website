@@ -4,14 +4,14 @@ import { BookOpen, Target, Users, Eye } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const teamMembers = [
-  { name: 'Shabir Ahmad', role: 'Chairman', image: 'https://picsum.photos/200/200?random=10' },
-  { name: 'Bashir Ahmad', role: 'Finance Manager', image: 'https://picsum.photos/200/200?random=11' },
-  { name: 'Irfan Hussain', role: 'Supervisor', image: 'https://picsum.photos/200/200?random=12' },
-  { name: 'Mudasir Ahmad', role: 'Organizer', image: 'https://picsum.photos/200/200?random=13' },
-  { name: 'Showkat Ahmad', role: 'Secretary', image: 'https://picsum.photos/200/200?random=14' },
-  { name: 'Yawar Abbas', role: 'Media Consultant', image: 'https://picsum.photos/200/200?random=15' },
-  { name: 'Bilal Ahmad', role: 'Social Media Manager', image: 'https://picsum.photos/200/200?random=16' },
-  { name: 'Zeeshan Ali', role: 'Media In-charge', image: 'https://picsum.photos/200/200?random=17' },
+  { name: 'Shabir Ahmad', role: 'Chairman', image: '/shabir ahmad.jpg' },
+  { name: 'Bashir Ahmad', role: 'Finance Manager', image: '/bashir.jpg' },
+  { name: 'Irfan Hussain', role: 'Supervisor', image: '/irfan.jpg' },
+  { name: 'Mudasir Ahmad', role: 'Organizer', image: '/mudasir.jpg' },
+  { name: 'Showkat Ahmad', role: 'Secretary', image: '/showkat.jpg' },
+  { name: 'Abbas Ali', role: 'Media Consultant', image: '/abbas ali.jpg' },
+  { name: 'Bilal Ahmad', role: 'Social Media Manager', image: '/bilal ahmad.jpg' },
+  { name: 'Zeeshan Ali', role: 'Media In-charge', image: '/zeeshan ali.jpg' },
 ];
 
 export function About() {

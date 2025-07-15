@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Star, Bookmark, BookmarkCheck, Info } from 'lucide-react';
+import { BookOpen, Star, Bookmark, BookmarkCheck, Download, Eye, Calendar, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Book } from '../types';
 import { useApp } from '../context/AppContext';
@@ -7,12 +7,14 @@ import { OptimizedImage } from './ui/OptimizedImage';
 
 interface BookCardProps {
   book: Book;
+  viewMode?: 'grid' | 'list';
 }
 
-export function BookCard({ book }: BookCardProps) {
+export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
   const { state, dispatch } = useApp();
   const isBookmarked = state.bookmarks.includes(book.id);
   const [isHovered, setIsHovered] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const getCategoryDisplayName = (category: string) => {
     const categoryNames: Record<string, string> = {
@@ -24,6 +26,18 @@ export function BookCard({ book }: BookCardProps) {
       'biography': 'Seerah'
     };
     return categoryNames[category] || category;
+  };
+
+  const getCategoryColor = (category: string) => {
+    const colors: Record<string, string> = {
+      'quran': 'from-emerald-500 to-green-600',
+      'hadith': 'from-blue-500 to-indigo-600',
+      'fiqh': 'from-purple-500 to-violet-600',
+      'history': 'from-amber-500 to-orange-600',
+      'tafsir': 'from-teal-500 to-cyan-600',
+      'biography': 'from-rose-500 to-pink-600'
+    };
+    return colors[category] || 'from-gray-500 to-gray-600';
   };
 
   const handleBookmark = (e: React.MouseEvent) => {
@@ -41,6 +55,12 @@ export function BookCard({ book }: BookCardProps) {
     // In a real app, you would navigate to the reader view
   };
 
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // In a real app, you would handle the download
+    console.log('Downloading book:', book.title);
+  };
+
   const cardVariants = {
     initial: { opacity: 0, y: 20, scale: 0.95 },
     inView: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: 'easeOut' } }
@@ -51,72 +71,139 @@ export function BookCard({ book }: BookCardProps) {
       variants={cardVariants}
       initial="initial"
       whileInView="inView"
-      whileHover={{ y: -8 }}
+      whileHover={{ y: -8, scale: 1.02 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       viewport={{ once: true }}
-      className="relative glass-card rounded-2xl overflow-hidden h-full flex flex-col cursor-pointer shadow-lg shadow-black/5 border border-white/20 dark:border-gray-700/30"
+      className="group relative bg-white dark:bg-gray-800 rounded-3xl overflow-hidden h-full flex flex-col shadow-xl shadow-black/10 dark:shadow-black/30 border border-gray-200 dark:border-gray-700 hover:shadow-2xl hover:shadow-black/20 dark:hover:shadow-black/40 transition-all duration-500"
     >
-      <div className="relative h-48 sm:h-56 lg:h-64">
+      {/* Book Cover Section */}
+      <div className="relative h-56 sm:h-64 lg:h-72 overflow-hidden">
         <motion.div
-          animate={{ scale: isHovered ? 1.1 : 1 }}
-          transition={{ duration: 0.4, ease: 'easeInOut' }}
+          animate={{ scale: isHovered ? 1.05 : 1 }}
+          transition={{ duration: 0.6, ease: 'easeInOut' }}
           className="w-full h-full"
         >
           <OptimizedImage
             src={book.coverImage}
             alt={book.title}
-            className="w-full h-full"
+            className="w-full h-full object-cover"
             loading="lazy"
           />
         </motion.div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-        <div className="absolute top-3 right-3">
-          <button
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
+
+        {/* Category Badge */}
+        <div className="absolute top-4 left-4">
+          <span className={`px-3 py-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-r ${getCategoryColor(book.category)} shadow-lg backdrop-blur-sm`}>
+            {getCategoryDisplayName(book.category)}
+          </span>
+        </div>
+
+        {/* Bookmark Button */}
+        <div className="absolute top-4 right-4">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={handleBookmark}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/30 transition-colors"
+            className="p-2.5 rounded-full bg-white/20 backdrop-blur-md text-white hover:bg-white/30 transition-all duration-300 shadow-lg"
             aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
           >
             {isBookmarked ? (
-              <BookmarkCheck className="h-5 w-5 text-gold" />
+              <BookmarkCheck className="h-5 w-5 text-yellow-400" />
             ) : (
               <Bookmark className="h-5 w-5" />
             )}
-          </button>
+          </motion.button>
         </div>
-        <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4">
-          <h3 className="font-bold text-white mb-1 line-clamp-2 text-base sm:text-lg" style={{textShadow: '0 1px 3px rgba(0,0,0,0.7)'}}>
+
+        {/* Rating Badge */}
+        <div className="absolute bottom-4 right-4">
+          <div className="flex items-center space-x-1 bg-black/40 backdrop-blur-md rounded-full px-3 py-1.5">
+            <Star className="h-4 w-4 text-yellow-400 fill-current" />
+            <span className="text-white text-sm font-semibold">{book.rating}</span>
+          </div>
+        </div>
+
+        {/* Title and Author Overlay */}
+        <div className="absolute bottom-4 left-4 right-20">
+          <h3 className="font-bold text-white mb-1 line-clamp-2 text-lg leading-tight" style={{textShadow: '0 2px 4px rgba(0,0,0,0.8)'}}>
             {book.title}
           </h3>
-          <p className="text-xs sm:text-sm text-gray-300 line-clamp-1" style={{textShadow: '0 1px 3px rgba(0,0,0,0.7)'}}>{book.author}</p>
+          <div className="flex items-center space-x-1 text-gray-200">
+            <User className="h-3 w-3" />
+            <p className="text-sm line-clamp-1" style={{textShadow: '0 1px 3px rgba(0,0,0,0.8)'}}>{book.author}</p>
+          </div>
         </div>
       </div>
 
-      <div className="p-4 sm:p-5 flex flex-col flex-grow">
-        <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-3 sm:mb-4">
-          <div className="flex items-center space-x-1">
-            <span className="px-2 sm:px-3 py-1 bg-gradient-to-r from-green-100 to-green-50 dark:from-green-900/30 dark:to-green-800/20 text-green-700 dark:text-green-300 text-xs rounded-full font-medium border border-green-200 dark:border-green-800">
-              {getCategoryDisplayName(book.category)}
-            </span>
+      {/* Content Section */}
+      <div className="p-5 sm:p-6 flex flex-col flex-grow">
+        {/* Book Info */}
+        <div className="flex-grow mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+              <Calendar className="h-4 w-4" />
+              <span>{new Date(book.publishedDate).getFullYear()}</span>
+            </div>
+            <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
+              <Eye className="h-4 w-4" />
+              <span>{book.downloadCount.toLocaleString()}</span>
+            </div>
           </div>
-          <div className="flex items-center space-x-1">
-            <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gold fill-current" />
-            <span className="font-medium text-gray-600 dark:text-gray-300 text-xs sm:text-sm">{book.rating}</span>
+
+          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 leading-relaxed mb-4">
+            {book.description}
+          </p>
+
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {book.tags.slice(0, 3).map((tag, index) => (
+              <span
+                key={index}
+                className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-lg font-medium"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          {/* Book Details */}
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-gray-500 dark:text-gray-400">Pages:</span>
+              <span className="ml-2 font-semibold text-gray-700 dark:text-gray-300">{book.pages}</span>
+            </div>
+            <div>
+              <span className="text-gray-500 dark:text-gray-400">Format:</span>
+              <span className="ml-2 font-semibold text-gray-700 dark:text-gray-300 uppercase">{book.fileType}</span>
+            </div>
           </div>
         </div>
 
-        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-3 sm:mb-4 flex-grow leading-relaxed">
-          {book.description}
-        </p>
-
-        <div className="mt-auto">
-          <button
+        {/* Action Buttons */}
+        <div className="space-y-3">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleRead}
-            className="w-full text-center py-2.5 sm:py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-green-500 to-green-600 hover:scale-105 hover:shadow-lg transition-all duration-300 flex items-center justify-center space-x-2 text-sm sm:text-base"
+            className={`w-full py-3.5 rounded-2xl font-bold text-white bg-gradient-to-r ${getCategoryColor(book.category)} hover:shadow-lg hover:shadow-current/25 transition-all duration-300 flex items-center justify-center space-x-2 text-sm`}
           >
-            <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
+            <BookOpen className="h-5 w-5" />
             <span>Mutala'ah Shuru Karen</span>
-          </button>
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleDownload}
+            className="w-full py-3 rounded-2xl font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 flex items-center justify-center space-x-2 text-sm"
+          >
+            <Download className="h-4 w-4" />
+            <span>Download</span>
+          </motion.button>
         </div>
       </div>
     </motion.div>
