@@ -1,6 +1,6 @@
 import React from 'react';
 import { BookCard } from './BookCard';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 import { Book } from '../types';
 
 interface BookGridProps {
@@ -8,7 +8,7 @@ interface BookGridProps {
 }
 
 export function BookGrid({ viewMode = 'grid' }: BookGridProps) {
-  const { state } = useApp();
+  const { state } = useSupabaseApp();
 
   const filteredBooks = React.useMemo(() => {
     let books = state.books;

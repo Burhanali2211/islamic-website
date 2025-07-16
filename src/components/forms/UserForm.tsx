@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { User } from '../../types';
-import { useApp } from '../../context/AppContext';
+import { useSupabaseApp } from '../../context/SupabaseContext';
 import { faker } from '@faker-js/faker';
 
 const userSchema = z.object({
@@ -20,7 +20,7 @@ interface UserFormProps {
 }
 
 export function UserForm({ onClose, user }: UserFormProps) {
-  const { dispatch } = useApp();
+  const { createUser, updateUser } = useSupabaseApp();
   const { register, handleSubmit, formState: { errors } } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -30,22 +30,26 @@ export function UserForm({ onClose, user }: UserFormProps) {
     },
   });
 
-  const onSubmit = (data: UserFormData) => {
-    if (user) {
-      const updatedUser: User = { ...user, ...data };
-      dispatch({ type: 'UPDATE_USER', payload: updatedUser });
-    } else {
-      const newUser: User = {
-        id: faker.string.uuid(),
-        ...data,
-        avatar: `https://i.pravatar.cc/150?u=${faker.string.uuid()}`,
-        joinDate: new Date().toISOString(),
-        bookmarks: [],
-        recentReads: [],
-      };
-      dispatch({ type: 'ADD_USER', payload: newUser });
+  const onSubmit = async (data: UserFormData) => {
+    try {
+      if (user) {
+        const updatedUser: User = { ...user, ...data };
+        await updateUser(user.id, updatedUser);
+      } else {
+        const newUser: User = {
+          id: faker.string.uuid(),
+          ...data,
+          avatar: `https://i.pravatar.cc/150?u=${faker.string.uuid()}`,
+          joinDate: new Date().toISOString(),
+          bookmarks: [],
+          recentReads: [],
+        };
+        await createUser(newUser);
+      }
+      onClose();
+    } catch (error) {
+      console.error('Error saving user:', error);
     }
-    onClose();
   };
 
   return (

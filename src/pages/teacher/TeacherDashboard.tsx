@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Users, Award, Calendar } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useSupabaseApp } from '../../context/SupabaseContext';
 
 export function TeacherDashboard() {
-  const { state } = useApp();
+  const { state } = useSupabaseApp();
 
   const stats = [
     { label: 'Active Courses', value: 3, icon: BookOpen },

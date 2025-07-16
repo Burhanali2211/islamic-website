@@ -1,11 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Clock, Target, TrendingUp, Calendar, Star } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 import { CircularProgressBar } from '../components/CircularProgressBar';
 
 export function StudentDashboard() {
-  const { state } = useApp();
+  const { state } = useSupabaseApp();
 
   const recentBooks = state.books
     .filter(book => state.recentReads.includes(book.id))

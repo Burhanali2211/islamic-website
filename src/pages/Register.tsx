@@ -1,11 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 import { BookOpen, User, Mail, Lock } from 'lucide-react';
 
 export function Register() {
-  const { state } = useApp();
+  const { state } = useSupabaseApp();
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-green-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">

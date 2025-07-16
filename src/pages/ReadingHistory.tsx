@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Clock, BookOpen, Calendar, Star, Filter, Search } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 
 export function ReadingHistory() {
-  const { state } = useApp();
+  const { state } = useSupabaseApp();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filterBy, setFilterBy] = React.useState('all');
 

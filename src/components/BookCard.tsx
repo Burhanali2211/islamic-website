@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { BookOpen, Star, Bookmark, BookmarkCheck, Download, Eye, Calendar, User } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Book } from '../types';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 import { OptimizedImage } from './ui/OptimizedImage';
 
 interface BookCardProps {
@@ -10,11 +10,10 @@ interface BookCardProps {
   viewMode?: 'grid' | 'list';
 }
 
-export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
-  const { state, dispatch } = useApp();
+export function BookCard({ book }: BookCardProps) {
+  const { state, addBookmark, removeBookmark, addRecentRead } = useSupabaseApp();
   const isBookmarked = state.bookmarks.includes(book.id);
   const [isHovered, setIsHovered] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
 
   const getCategoryDisplayName = (category: string) => {
     const categoryNames: Record<string, string> = {
@@ -40,19 +39,27 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
     return colors[category] || 'from-gray-500 to-gray-600';
   };
 
-  const handleBookmark = (e: React.MouseEvent) => {
+  const handleBookmark = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isBookmarked) {
-      dispatch({ type: 'REMOVE_BOOKMARK', payload: book.id });
-    } else {
-      dispatch({ type: 'ADD_BOOKMARK', payload: book.id });
+    try {
+      if (isBookmarked) {
+        await removeBookmark(book.id);
+      } else {
+        await addBookmark(book.id);
+      }
+    } catch (error) {
+      console.error('Error updating bookmark:', error);
     }
   };
 
-  const handleRead = (e: React.MouseEvent) => {
+  const handleRead = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    dispatch({ type: 'ADD_RECENT_READ', payload: book.id });
-    // In a real app, you would navigate to the reader view
+    try {
+      await addRecentRead(book.id);
+      // In a real app, you would navigate to the reader view
+    } catch (error) {
+      console.error('Error adding to recent reads:', error);
+    }
   };
 
   const handleDownload = (e: React.MouseEvent) => {
@@ -63,7 +70,7 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
 
   const cardVariants = {
     initial: { opacity: 0, y: 20, scale: 0.95 },
-    inView: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: 'easeOut' } }
+    inView: { opacity: 1, y: 0, scale: 1 }
   };
 
   return (
@@ -71,6 +78,7 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
       variants={cardVariants}
       initial="initial"
       whileInView="inView"
+      transition={{ duration: 0.5, ease: 'easeOut' }}
       whileHover={{ y: -8, scale: 1.02 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
@@ -85,7 +93,7 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
           className="w-full h-full"
         >
           <OptimizedImage
-            src={book.coverImage}
+            src={book.cover_image_url || '/placeholder-book.jpg'}
             alt={book.title}
             className="w-full h-full object-cover"
             loading="lazy"
@@ -123,7 +131,7 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
         <div className="absolute bottom-4 right-4">
           <div className="flex items-center space-x-1 bg-black/40 backdrop-blur-md rounded-full px-3 py-1.5">
             <Star className="h-4 w-4 text-yellow-400 fill-current" />
-            <span className="text-white text-sm font-semibold">{book.rating}</span>
+            <span className="text-white text-sm font-semibold">{book.rating || 0}</span>
           </div>
         </div>
 
@@ -146,11 +154,11 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
               <Calendar className="h-4 w-4" />
-              <span>{new Date(book.publishedDate).getFullYear()}</span>
+              <span>{book.published_date ? new Date(book.published_date).getFullYear() : 'N/A'}</span>
             </div>
             <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
               <Eye className="h-4 w-4" />
-              <span>{book.downloadCount.toLocaleString()}</span>
+              <span>{(book.download_count || 0).toLocaleString()}</span>
             </div>
           </div>
 
@@ -160,7 +168,7 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
 
           {/* Tags */}
           <div className="flex flex-wrap gap-2 mb-4">
-            {book.tags.slice(0, 3).map((tag, index) => (
+            {book.tags?.slice(0, 3).map((tag, index) => (
               <span
                 key={index}
                 className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-lg font-medium"
@@ -178,7 +186,7 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
             </div>
             <div>
               <span className="text-gray-500 dark:text-gray-400">Format:</span>
-              <span className="ml-2 font-semibold text-gray-700 dark:text-gray-300 uppercase">{book.fileType}</span>
+              <span className="ml-2 font-semibold text-gray-700 dark:text-gray-300 uppercase">{book.file_type}</span>
             </div>
           </div>
         </div>

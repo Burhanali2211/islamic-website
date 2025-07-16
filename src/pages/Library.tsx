@@ -3,10 +3,10 @@ import { CategoryFilter } from '../components/CategoryFilter';
 import { BookGrid } from '../components/BookGrid';
 import { motion } from 'framer-motion';
 import { Search, Filter, BookOpen, Users, Star, TrendingUp, Grid, List } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 
 export function Library() {
-  const { state, dispatch } = useApp();
+  const { state, dispatch } = useSupabaseApp();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
 

@@ -1,12 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useApp } from '../../context/AppContext';
+import { useSupabaseApp } from '../../context/SupabaseContext';
 import { DataTable } from '../../components/ui/DataTable';
 import { User } from '../../types';
 
 export function ManageStudents() {
-  const { state } = useApp();
-  const students = state.users.filter(u => u.role === 'user').slice(0, 10); // Mock student list
+  const { state } = useSupabaseApp();
+  const students = state.users.filter(u => u.role === 'student').slice(0, 10); // Mock student list
 
   const columns = [
     { 

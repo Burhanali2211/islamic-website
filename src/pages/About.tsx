@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Target, Users, Eye } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 
 const teamMembers = [
   { name: 'Shabir Ahmad', role: 'Chairman', image: '/shabir ahmad.jpg' },
@@ -15,7 +15,7 @@ const teamMembers = [
 ];
 
 export function About() {
-  const { state } = useApp();
+  const { state } = useSupabaseApp();
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 space-y-8 sm:space-y-12 lg:space-y-16">

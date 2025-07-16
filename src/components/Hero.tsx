@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Search, ArrowRight } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 
 export function Hero() {
-  const { state } = useApp();
+  const { state } = useSupabaseApp();
 
   return (
     <section className="bg-gradient-to-r from-green-600 to-green-700 dark:from-green-700 dark:to-green-800 text-white py-12 sm:py-16 lg:py-20">

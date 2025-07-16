@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { BookOpen, Sun, Moon, Menu, X } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function PublicHeader() {
-  const { state, dispatch } = useApp();
+  const { state, dispatch } = useSupabaseApp();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navLinks = [

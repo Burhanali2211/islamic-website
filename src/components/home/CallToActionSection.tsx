@@ -2,10 +2,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useSupabaseApp } from '../../context/SupabaseContext';
 
 export function CallToActionSection() {
-  const { state } = useApp();
+  const { state } = useSupabaseApp();
 
   return (
     <section className="py-12 sm:py-16 lg:py-20">

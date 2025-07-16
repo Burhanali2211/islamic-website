@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { School, Book, Users, Star } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 
 const courses = [
   { title: 'Quranic Tafsir', instructor: 'Dr. Yusuf Ahmed', duration: '12 Weeks', level: 'Intermediate', icon: Book },
@@ -16,7 +16,7 @@ const faculty = [
 ];
 
 export function LearningCenter() {
-  const { state } = useApp();
+  const { state } = useSupabaseApp();
 
   const testimonials = [
     { name: 'Ahmed Hassan', quote: 'The structured approach to Islamic education here has transformed my understanding of the Deen. The teachers are knowledgeable and patient.', image: 'https://i.pravatar.cc/150?u=student1' },

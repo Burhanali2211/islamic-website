@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { AppProvider } from './context/AppContext';
+import { SupabaseAppProvider } from './context/SupabaseContext';
 import { AnimatePresence } from 'framer-motion';
 
 // Layouts
@@ -51,6 +51,7 @@ const GradingCenter = React.lazy(() => import('./pages/teacher/GradingCenter').t
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const ManageBooks = React.lazy(() => import('./pages/admin/ManageBooks').then(module => ({ default: module.ManageBooks })));
 const ManageUsers = React.lazy(() => import('./pages/admin/ManageUsers').then(module => ({ default: module.ManageUsers })));
+const ManageBorrowing = React.lazy(() => import('./pages/admin/ManageBorrowing').then(module => ({ default: module.ManageBorrowing })));
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -74,13 +75,13 @@ function AnimatedRoutes() {
         {/* Dashboard Routes */}
         <Route element={<DashboardLayout />}>
           {/* Student Routes */}
-          <Route path="/student" element={<ProtectedRoute allowedRoles={['user']}><StudentDashboard /></ProtectedRoute>} />
-          <Route path="/study-plans" element={<ProtectedRoute allowedRoles={['user']}><StudyPlans /></ProtectedRoute>} />
-          <Route path="/progress" element={<ProtectedRoute allowedRoles={['user']}><Progress /></ProtectedRoute>} />
-          <Route path="/notes" element={<ProtectedRoute allowedRoles={['user']}><Notes /></ProtectedRoute>} />
-          <Route path="/study-groups" element={<ProtectedRoute allowedRoles={['user']}><StudyGroups /></ProtectedRoute>} />
-          <Route path="/quizzes" element={<ProtectedRoute allowedRoles={['user']}><Quizzes /></ProtectedRoute>} />
-          <Route path="/history" element={<ProtectedRoute allowedRoles={['user']}><ReadingHistory /></ProtectedRoute>} />
+          <Route path="/student" element={<ProtectedRoute allowedRoles={['student']}><StudentDashboard /></ProtectedRoute>} />
+          <Route path="/study-plans" element={<ProtectedRoute allowedRoles={['student']}><StudyPlans /></ProtectedRoute>} />
+          <Route path="/progress" element={<ProtectedRoute allowedRoles={['student']}><Progress /></ProtectedRoute>} />
+          <Route path="/notes" element={<ProtectedRoute allowedRoles={['student']}><Notes /></ProtectedRoute>} />
+          <Route path="/study-groups" element={<ProtectedRoute allowedRoles={['student']}><StudyGroups /></ProtectedRoute>} />
+          <Route path="/quizzes" element={<ProtectedRoute allowedRoles={['student']}><Quizzes /></ProtectedRoute>} />
+          <Route path="/history" element={<ProtectedRoute allowedRoles={['student']}><ReadingHistory /></ProtectedRoute>} />
           
           {/* Teacher Routes */}
           <Route path="/teacher" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherDashboard /></ProtectedRoute>} />
@@ -92,9 +93,10 @@ function AnimatedRoutes() {
           <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/books" element={<ProtectedRoute allowedRoles={['admin']}><ManageBooks /></ProtectedRoute>} />
           <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><ManageUsers /></ProtectedRoute>} />
+          <Route path="/admin/borrowing" element={<ProtectedRoute allowedRoles={['admin']}><ManageBorrowing /></ProtectedRoute>} />
 
           {/* Shared Profile Route */}
-          <Route path="/profile" element={<ProtectedRoute allowedRoles={['user', 'teacher', 'admin']}><Profile /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}><Profile /></ProtectedRoute>} />
         </Route>
         
         {/* Not Found Route */}
@@ -106,7 +108,7 @@ function AnimatedRoutes() {
 
 function App() {
   return (
-    <AppProvider>
+    <SupabaseAppProvider>
       <Router>
         <div className="min-h-screen text-gray-800 dark:text-gray-200 font-sans overflow-x-hidden">
           <AnimatedBackground />
@@ -115,7 +117,7 @@ function App() {
           </Suspense>
         </div>
       </Router>
-    </AppProvider>
+    </SupabaseAppProvider>
   );
 }
 

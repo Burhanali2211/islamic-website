@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Clock, MessageSquare } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 
 interface FormData {
   name: string;
@@ -18,7 +18,7 @@ interface FormErrors {
 }
 
 export function Contact() {
-  const { state } = useApp();
+  const { state } = useSupabaseApp();
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',

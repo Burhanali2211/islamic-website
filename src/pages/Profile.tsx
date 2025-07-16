@@ -1,11 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { User, Mail, Calendar, MapPin, BookOpen, Award, Settings, Camera } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 
 export function Profile() {
-  const { state } = useApp();
-  const userProfile = state.currentUser;
+  const { state } = useSupabaseApp();
+  const userProfile = state.profile;
 
   if (!userProfile) {
     return <div>Loading profile...</div>;
@@ -60,8 +60,8 @@ export function Profile() {
           <div className="glass-card p-8 rounded-3xl text-center">
             <div className="relative inline-block mb-6">
               <img
-                src={userProfile.avatar}
-                alt={userProfile.name}
+                src={userProfile.avatar_url || '/default-avatar.png'}
+                alt={userProfile.full_name || 'User'}
                 className="w-24 h-24 rounded-full object-cover mx-auto border-4 border-white dark:border-gray-800"
               />
               <button className="absolute bottom-0 right-0 neomorph-button p-2 rounded-full hover:scale-105 transition-transform">
@@ -70,7 +70,7 @@ export function Profile() {
             </div>
             
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              {userProfile.name}
+              {userProfile.full_name || 'User'}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               Passionate Islamic scholar and student.
@@ -79,11 +79,11 @@ export function Profile() {
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-center space-x-2">
                 <Mail className="h-4 w-4 text-gray-500" />
-                <span className="text-gray-600 dark:text-gray-400">{userProfile.email}</span>
+                <span className="text-gray-600 dark:text-gray-400">{userProfile.email || 'No email'}</span>
               </div>
               <div className="flex items-center justify-center space-x-2">
                 <Calendar className="h-4 w-4 text-gray-500" />
-                <span className="text-gray-600 dark:text-gray-400">Joined {new Date(userProfile.joinDate).toLocaleDateString()}</span>
+                <span className="text-gray-600 dark:text-gray-400">Joined {userProfile.created_at ? new Date(userProfile.created_at).toLocaleDateString() : 'Unknown'}</span>
               </div>
             </div>
           </div>

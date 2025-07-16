@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, TrendingUp, Users, Star, ArrowRight, Quote as QuoteIcon } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 import { BookCard } from '../components/BookCard';
 import { Link } from 'react-router-dom';
 import { AboutSection } from '../components/home/AboutSection';
@@ -13,7 +13,7 @@ import { EventGallery } from '../components/home/EventGallery';
 import { PromotionalBanner } from '../components/home/PromotionalBanner';
 
 export function Home() {
-  const { state } = useApp();
+  const { state } = useSupabaseApp();
 
   const featuredBooks = React.useMemo(() => {
     return [...state.books]

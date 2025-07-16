@@ -1,15 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BookCard } from './BookCard';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 
 export function FeaturedBooks() {
-  const { state } = useApp();
+  const { state } = useSupabaseApp();
 
   const featuredBooks = React.useMemo(() => {
     return state.books
-      .filter(book => book.rating >= 4.5)
-      .sort((a, b) => b.downloadCount - a.downloadCount)
+      .filter(book => (book.rating || 0) >= 4.5)
+      .sort((a, b) => (b.download_count || 0) - (a.download_count || 0))
       .slice(0, 8);
   }, [state.books]);
 

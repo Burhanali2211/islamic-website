@@ -1,14 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit, Trash2 } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useSupabaseApp } from '../../context/SupabaseContext';
 import { DataTable } from '../../components/ui/DataTable';
 import { Modal } from '../../components/ui/Modal';
 import { UserForm } from '../../components/forms/UserForm';
 import { User } from '../../types';
 
 export function ManageUsers() {
-  const { state, dispatch } = useApp();
+  const { state, deleteUser } = useSupabaseApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
 
@@ -22,9 +22,13 @@ export function ManageUsers() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (userId: string) => {
+  const handleDelete = async (userId: string) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      dispatch({ type: 'DELETE_USER', payload: userId });
+      try {
+        await deleteUser(userId);
+      } catch (error) {
+        console.error('Error deleting user:', error);
+      }
     }
   };
 

@@ -16,10 +16,10 @@ import {
   UserCheck,
   LayoutDashboard
 } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 
 export function Sidebar() {
-  const { state } = useApp();
+  const { state } = useSupabaseApp();
   const location = useLocation();
 
   const studentNav = [
@@ -48,10 +48,10 @@ export function Sidebar() {
     { icon: User, label: 'Profile', path: '/profile' },
   ];
 
-  const navItems = 
-    state.currentUser?.role === 'user' ? studentNav :
-    state.currentUser?.role === 'teacher' ? teacherNav :
-    state.currentUser?.role === 'admin' ? adminNav : [];
+  const navItems =
+    state.profile?.role === 'student' ? studentNav :
+    state.profile?.role === 'teacher' ? teacherNav :
+    state.profile?.role === 'admin' ? adminNav : [];
 
   const renderMenuItems = (items: typeof studentNav) => {
     return items.map((item) => {

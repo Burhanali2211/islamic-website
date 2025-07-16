@@ -12,6 +12,7 @@
   "dependencies": {
     "@faker-js/faker": "^9.9.0",
     "@hookform/resolvers": "^3.9.0",
+    "@supabase/supabase-js": "^2.51.0",
     "@types/node": "^24.0.13",
     "axios": "^1.9.0",
     "date-fns": "^4.1.0",

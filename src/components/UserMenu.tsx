@@ -1,20 +1,24 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, LogOut, Settings } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function UserMenu() {
-  const { state, logout } = useApp();
+  const { state, signOut } = useSupabaseApp();
   const [isOpen, setIsOpen] = React.useState(false);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
-  if (!state.currentUser) return null;
+  if (!state.profile) return null;
 
   return (
     <div className="relative">
@@ -22,8 +26,8 @@ export function UserMenu() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 neomorph-button p-2 rounded-full hover:scale-105 transition-transform"
       >
-        <img src={state.currentUser.avatar} alt={state.currentUser.name} className="w-8 h-8 rounded-full" />
-        <span className="hidden md:block font-medium text-gray-700 dark:text-gray-300 pr-2">{state.currentUser.name}</span>
+        <img src={state.profile.avatar_url || '/default-avatar.png'} alt={state.profile.full_name || 'User'} className="w-8 h-8 rounded-full" />
+        <span className="hidden md:block font-medium text-gray-700 dark:text-gray-300 pr-2">{state.profile.full_name || 'User'}</span>
       </button>
 
       <AnimatePresence>

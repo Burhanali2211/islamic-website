@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Book, BookOpen, Users, Clock, FileText, User, Star, Scroll, Filter, SlidersHorizontal, Calendar, Languages } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 import { BookCategory } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -25,7 +25,7 @@ const categoryColors: Record<BookCategory | 'all', { from: string; to: string; b
 };
 
 export function CategoryFilter() {
-  const { state, dispatch } = useApp();
+  const { state, dispatch } = useSupabaseApp();
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const categories = [

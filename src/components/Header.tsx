@@ -1,10 +1,10 @@
 import React from 'react';
 import { Search, Moon, Sun, Bell } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useSupabaseApp } from '../context/SupabaseContext';
 import { UserMenu } from './UserMenu';
 
 export function Header() {
-  const { state, dispatch } = useApp();
+  const { state, dispatch } = useSupabaseApp();
 
   const toggleTheme = () => {
     dispatch({ type: 'SET_THEME', payload: state.theme === 'light' ? 'dark' : 'light' });
