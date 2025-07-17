@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Users, Award } from 'lucide-react';
-import { useSupabaseApp } from '../context/SupabaseContext';
 
 const leadershipTeam = [
   { name: 'Aga Syed Mustafa Al Hussaini Al Hamadani', role: 'Founder (2005)', image: '/syed mustafa al-hussani al-hamadani.png', quote: 'Founded with the intention to bring light of knowledge to people and enlighten them with the true message of Karbala.' },
@@ -11,7 +10,6 @@ const leadershipTeam = [
 ];
 
 export function Idarah() {
-  const { state } = useSupabaseApp();
 
   return (
     <div className="p-6 space-y-12">

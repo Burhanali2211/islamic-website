@@ -23,10 +23,10 @@ export interface BorrowingResponse {
 }
 
 export interface BorrowingWithDetails extends BorrowingRecord {
-  book?: any;
-  user?: any;
-  issued_by_user?: any;
-  returned_to_user?: any;
+  book?: Book;
+  user?: User;
+  issued_by_user?: User;
+  returned_to_user?: User;
 }
 
 class BorrowingService {
@@ -330,7 +330,7 @@ class BorrowingService {
     totalOverdue: number;
     totalReturned: number;
     totalFines: number;
-    popularBooks: any[];
+    popularBooks: { book_id: string; count: number; book?: Book }[];
     activeUsers: number;
     error: string | null;
   }> {

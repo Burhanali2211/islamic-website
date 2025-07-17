@@ -1,18 +1,29 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback, ReactNode } from 'react';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
 import { authService, type IslamicProfile } from '../services/auth';
 import { booksService } from '../services/books';
 import { usersService } from '../services/users';
 import { borrowingService } from '../services/borrowing';
 import { categoriesService } from '../services/categories';
-import type { 
-  Book, 
-  User, 
-  Theme, 
-  BorrowingRecord, 
+import { coursesService } from '../services/courses';
+import { dataManager } from '../services/dataManager';
+import { localStorageService } from '../services/localStorage';
+import type {
+  Book,
+  User,
+  Theme,
+  BorrowingRecord,
   IslamicCategory,
-  DashboardStats 
+  DashboardStats,
+  BookFilters,
+  UserFilters,
+  BorrowingFilters,
+  CreateBookData,
+  UpdateBookData,
+  CreateUserData,
+  UpdateUserData,
+  CreateCategoryData,
+  UpdateCategoryData
 } from '../types';
 
 interface SupabaseAppState {
@@ -113,20 +124,20 @@ const SupabaseAppContext = createContext<{
   signOut: () => Promise<void>;
   
   // Data methods
-  loadBooks: (filters?: any) => Promise<void>;
-  loadUsers: (filters?: any) => Promise<void>;
-  loadBorrowingRecords: (filters?: any) => Promise<void>;
+  loadBooks: (filters?: BookFilters) => Promise<void>;
+  loadUsers: (filters?: UserFilters) => Promise<void>;
+  loadBorrowingRecords: (filters?: BorrowingFilters) => Promise<void>;
   loadCategories: () => Promise<void>;
   loadDashboardStats: () => Promise<void>;
-  
+
   // Book methods
-  createBook: (bookData: any) => Promise<void>;
-  updateBook: (id: string, updates: any) => Promise<void>;
+  createBook: (bookData: CreateBookData) => Promise<void>;
+  updateBook: (id: string, updates: UpdateBookData) => Promise<void>;
   deleteBook: (id: string) => Promise<void>;
-  
+
   // User methods
-  createUser: (userData: any) => Promise<void>;
-  updateUser: (id: string, updates: any) => Promise<void>;
+  createUser: (userData: CreateUserData) => Promise<void>;
+  updateUser: (id: string, updates: UpdateUserData) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
   
   // Borrowing methods
@@ -135,10 +146,20 @@ const SupabaseAppContext = createContext<{
   renewBook: (borrowingId: string) => Promise<void>;
   
   // Category methods
-  createCategory: (categoryData: any) => Promise<void>;
-  updateCategory: (id: string, updates: any) => Promise<void>;
+  createCategory: (categoryData: CreateCategoryData) => Promise<void>;
+  updateCategory: (id: string, updates: UpdateCategoryData) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
-  
+
+  // Course methods
+  loadCourses: (teacherId?: string, classId?: string) => Promise<any>;
+  createCourse: (courseData: any) => Promise<{ data: any; error: string | null }>;
+  loadAssignments: (courseId?: string, teacherId?: string, studentId?: string) => Promise<any>;
+
+  // Draft management methods
+  saveDraft: (type: string, id: string, data: any) => boolean;
+  getDraft: (type: string, id: string) => any;
+  clearDraft: (type: string, id: string) => boolean;
+
   // Utility methods
   addBookmark: (bookId: string) => Promise<void>;
   removeBookmark: (bookId: string) => Promise<void>;
@@ -147,20 +168,39 @@ const SupabaseAppContext = createContext<{
 
 function supabaseAppReducer(state: SupabaseAppState, action: SupabaseAppAction): SupabaseAppState {
   switch (action.type) {
-    case 'SET_AUTH':
-      return { 
-        ...state, 
+    case 'SET_AUTH': {
+      console.log('🔄 [REDUCER] SET_AUTH action received:', {
+        hasUser: !!action.payload.user,
+        hasProfile: !!action.payload.profile,
+        userEmail: action.payload.user?.email,
+        userRole: action.payload.profile?.role,
+        timestamp: new Date().toISOString()
+      });
+
+      const newAuthState = {
+        ...state,
         user: action.payload.user,
         profile: action.payload.profile,
         session: action.payload.session,
         bookmarks: action.payload.profile?.bookmarks || [],
         recentReads: action.payload.profile?.recent_reads || []
       };
+
+      console.log('✅ [REDUCER] New auth state created:', {
+        hasUser: !!newAuthState.user,
+        hasProfile: !!newAuthState.profile,
+        userRole: newAuthState.profile?.role
+      });
+
+      return newAuthState;
+    }
+
     case 'LOGOUT':
-      return { 
-        ...state, 
-        user: null, 
-        profile: null, 
+      console.log('🚪 [REDUCER] LOGOUT action received');
+      return {
+        ...state,
+        user: null,
+        profile: null,
         session: null,
         bookmarks: [],
         recentReads: []
@@ -230,23 +270,36 @@ function supabaseAppReducer(state: SupabaseAppState, action: SupabaseAppAction):
 
 export function SupabaseAppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(supabaseAppReducer, initialState);
+  const realtimeUnsubscribeRef = useRef<(() => void) | null>(null);
 
   // Initialize authentication state
   useEffect(() => {
+    console.log('🚀 [CONTEXT] Initializing authentication state...');
+
     const initializeAuth = async () => {
       try {
+        console.log('🔍 [CONTEXT] Getting current session...');
+
+        // Check for real Supabase session
         const { user, session } = await authService.getCurrentSession();
+
         if (user) {
+          console.log('👤 [CONTEXT] User found in session:', user.email);
           const profile = await authService.getProfile(user.id);
-          dispatch({ 
-            type: 'SET_AUTH', 
-            payload: { user, profile, session } 
+          console.log('📋 [CONTEXT] Profile loaded:', profile?.role);
+
+          dispatch({
+            type: 'SET_AUTH',
+            payload: { user, profile, session }
           });
+        } else {
+          console.log('❌ [CONTEXT] No user found in session');
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error('💥 [CONTEXT] Error initializing auth:', error);
         dispatch({ type: 'SET_ERROR', payload: 'Failed to initialize authentication' });
       } finally {
+        console.log('🔄 [CONTEXT] Setting initial loading to false');
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
@@ -255,18 +308,29 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = authService.onAuthStateChange(async (event, session) => {
+      console.log('🔔 [CONTEXT] Auth state change event:', { event, hasSession: !!session, userEmail: session?.user?.email });
+
       if (event === 'SIGNED_IN' && session?.user) {
+        console.log('👤 [CONTEXT] User signed in, fetching profile...');
         const profile = await authService.getProfile(session.user.id);
-        dispatch({ 
-          type: 'SET_AUTH', 
-          payload: { user: session.user, profile, session } 
+        dispatch({
+          type: 'SET_AUTH',
+          payload: { user: session.user, profile, session }
         });
       } else if (event === 'SIGNED_OUT') {
+        console.log('🚪 [CONTEXT] User signed out');
         dispatch({ type: 'LOGOUT' });
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      // Clean up data manager subscriptions
+      dataManager.cleanup();
+      if (realtimeUnsubscribeRef.current) {
+        realtimeUnsubscribeRef.current();
+      }
+    };
   }, []);
 
   // Load theme from localStorage
@@ -285,90 +349,120 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
 
   // Authentication methods
   const signIn = async (email: string, password: string) => {
+    console.log('🔐 [AUTH] Starting signIn process...', { email, timestamp: new Date().toISOString() });
+
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       dispatch({ type: 'SET_ERROR', payload: null });
+      console.log('🔄 [AUTH] Loading state set to true, error cleared');
 
-      // Handle demo login
-      if (email.includes('@idarah.com') && password.includes('123')) {
-        const demoUser = {
-          id: email.split('@')[0] === 'admin' ? 'admin-demo-id' :
-              email.split('@')[0] === 'teacher' ? 'teacher-demo-id' : 'student-demo-id',
-          email: email,
-          aud: 'authenticated',
-          role: 'authenticated'
-        } as any;
-
-        const demoProfile = {
-          id: demoUser.id,
-          email: email,
-          full_name: email.split('@')[0] === 'admin' ? 'Administrator' :
-                    email.split('@')[0] === 'teacher' ? 'Ustadh Ahmad' : 'Muhammad Ali',
-          name_arabic: email.split('@')[0] === 'admin' ? 'المدير' :
-                      email.split('@')[0] === 'teacher' ? 'الأستاذ أحمد' : 'محمد علي',
-          role: email.split('@')[0] as 'admin' | 'teacher' | 'student',
-          is_active: true,
-          student_id: email.split('@')[0] === 'student' ? 'IWA20240001' : undefined,
-          class_level: email.split('@')[0] === 'teacher' ? 'Senior Teacher' :
-                      email.split('@')[0] === 'student' ? 'Grade 10' : undefined,
-          max_borrow_limit: email.split('@')[0] === 'admin' ? 50 :
-                           email.split('@')[0] === 'teacher' ? 10 : 3,
-          current_borrowed_count: 0,
-          total_books_borrowed: 0,
-          bookmarks: [],
-          recent_reads: []
-        };
-
-        const demoSession = {
-          access_token: 'demo-token',
-          refresh_token: 'demo-refresh',
-          expires_in: 3600,
-          token_type: 'bearer',
-          user: demoUser
-        } as any;
-
-        dispatch({
-          type: 'SET_AUTH',
-          payload: { user: demoUser, profile: demoProfile, session: demoSession }
-        });
-        return;
-      }
-
+      // Real authentication
+      console.log('🔗 [AUTH] Attempting Supabase authentication...');
       const { user, profile, session, error } = await authService.signIn(email, password);
+
       if (error) {
+        console.error('❌ [AUTH] Supabase authentication error:', error);
         dispatch({ type: 'SET_ERROR', payload: error });
-        return;
+        throw new Error(error);
       }
 
+      if (!user || !profile) {
+        const errorMsg = 'Authentication failed - user or profile not found';
+        console.error('❌ [AUTH] Authentication failed:', errorMsg);
+        dispatch({ type: 'SET_ERROR', payload: errorMsg });
+        throw new Error(errorMsg);
+      }
+
+      console.log('✅ [AUTH] Supabase authentication successful:', { user: user.email, role: profile.role });
       dispatch({
         type: 'SET_AUTH',
         payload: { user, profile, session }
       });
+
+      // Set up real-time subscriptions for user data
+      if (realtimeUnsubscribeRef.current) {
+        realtimeUnsubscribeRef.current();
+      }
+
+      realtimeUnsubscribeRef.current = dataManager.subscribeToUserData(user.id, (payload) => {
+        console.log('📡 [REALTIME] User data updated:', payload);
+        // Refresh relevant data based on the table that changed
+        switch (payload.table) {
+          case 'borrowing_records':
+            loadBorrowingRecords();
+            break;
+          case 'reading_progress':
+            // Refresh reading progress
+            break;
+          case 'notifications':
+            // Refresh notifications
+            break;
+          case 'course_enrollments':
+            // Refresh course enrollments
+            break;
+        }
+      });
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: (error as Error).message });
+      let errorMessage = 'Authentication failed';
+
+      if (error instanceof Error) {
+        // Provide user-friendly error messages
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'بيانات الدخول غير صحيحة - Invalid login credentials. Please check your email and password.';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'البريد الإلكتروني غير مؤكد - Email not confirmed. Please check your email for confirmation link.';
+        } else if (error.message.includes('Too many requests')) {
+          errorMessage = 'محاولات كثيرة جداً - Too many login attempts. Please wait a moment and try again.';
+        } else if (error.message.includes('Network')) {
+          errorMessage = 'مشكلة في الاتصال - Network error. Please check your internet connection.';
+        } else {
+          errorMessage = `خطأ في المصادقة - Authentication error: ${error.message}`;
+        }
+      }
+
+      console.error('💥 [AUTH] SignIn error caught:', errorMessage);
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      throw error; // Re-throw to allow Login component to handle it
     } finally {
+      console.log('🔄 [AUTH] Setting loading to false');
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
   const signUp = async (email: string, password: string, userData: Partial<IslamicProfile>) => {
+    console.log('🔐 [AUTH] Starting signUp process...', { email, role: userData.role });
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       dispatch({ type: 'SET_ERROR', payload: null });
-      
+      console.log('🔄 [AUTH] Loading state set to true, error cleared');
+
+      console.log('🔗 [AUTH] Attempting Supabase registration...');
       const { user, profile, session, error } = await authService.signUp(email, password, userData);
+
       if (error) {
+        console.error('❌ [AUTH] Supabase registration error:', error);
         dispatch({ type: 'SET_ERROR', payload: error });
-        return;
+        throw new Error(error);
       }
-      
-      dispatch({ 
-        type: 'SET_AUTH', 
-        payload: { user, profile, session } 
+
+      if (!user) {
+        const errorMsg = 'Registration failed - user not created';
+        console.error('❌ [AUTH] Registration failed:', errorMsg);
+        dispatch({ type: 'SET_ERROR', payload: errorMsg });
+        throw new Error(errorMsg);
+      }
+
+      console.log('✅ [AUTH] Registration successful:', { userId: user.id, email: user.email });
+      dispatch({
+        type: 'SET_AUTH',
+        payload: { user, profile, session }
       });
     } catch (error) {
+      console.error('💥 [AUTH] SignUp error caught:', (error as Error).message);
       dispatch({ type: 'SET_ERROR', payload: (error as Error).message });
+      throw error; // Re-throw to let the component handle it
     } finally {
+      console.log('🔄 [AUTH] Setting loading to false');
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
@@ -383,122 +477,29 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
   };
 
   // Data loading methods
-  const loadBooks = async (filters?: any) => {
+  const loadBooks = useCallback(async (filters?: BookFilters) => {
     try {
-      // Check if we're in demo mode
-      if (state.user?.id?.includes('demo')) {
-        // Load demo books data
-        const demoBooks = [
-          {
-            id: '1',
-            title: 'Sahih Al-Bukhari',
-            title_arabic: 'صحيح البخاري',
-            author: 'Imam Muhammad al-Bukhari',
-            author_arabic: 'الإمام محمد البخاري',
-            category: 'hadith' as const,
-            description: 'The most authentic collection of Hadith compiled by Imam Bukhari',
-            language: 'en' as const,
-            pages: 3000,
-            is_featured: true,
-            is_available: true,
-            physical_copies: 5,
-            digital_copies: 1,
-            download_count: 150,
-            rating: 4.9,
-            rating_count: 45,
-            tags: ['hadith', 'sahih', 'bukhari'],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            id: '2',
-            title: 'Tafsir Ibn Kathir',
-            title_arabic: 'تفسير ابن كثير',
-            author: 'Ibn Kathir',
-            author_arabic: 'ابن كثير',
-            category: 'tafsir' as const,
-            description: 'Comprehensive commentary on the Quran by the renowned scholar Ibn Kathir',
-            language: 'ar' as const,
-            pages: 4000,
-            is_featured: true,
-            is_available: true,
-            physical_copies: 3,
-            digital_copies: 1,
-            download_count: 200,
-            rating: 4.8,
-            rating_count: 67,
-            tags: ['tafsir', 'quran', 'commentary'],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        ];
-        dispatch({ type: 'SET_BOOKS', payload: demoBooks });
-        return;
-      }
+      // Use enhanced data manager with caching
+      const cacheKey = `books_${JSON.stringify(filters || {})}`;
+      const { data, error } = await dataManager.getData(
+        cacheKey,
+        () => booksService.getBooks(filters),
+        { useCache: true }
+      );
 
-      const { data, error } = await booksService.getBooks(filters);
       if (error) {
         dispatch({ type: 'SET_ERROR', payload: error });
         return;
       }
+
       dispatch({ type: 'SET_BOOKS', payload: data || [] });
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: (error as Error).message });
     }
-  };
+  }, []);
 
-  const loadUsers = async (filters?: any) => {
+  const loadUsers = useCallback(async (filters?: UserFilters) => {
     try {
-      // Check if we're in demo mode
-      if (state.user?.id?.includes('demo')) {
-        const demoUsers = [
-          {
-            id: 'admin-demo-id',
-            email: 'admin@idarah.com',
-            full_name: 'Administrator',
-            name_arabic: 'المدير',
-            role: 'admin' as const,
-            is_active: true,
-            max_borrow_limit: 50,
-            current_borrowed_count: 0,
-            total_books_borrowed: 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            id: 'teacher-demo-id',
-            email: 'teacher@idarah.com',
-            full_name: 'Ustadh Ahmad',
-            name_arabic: 'الأستاذ أحمد',
-            role: 'teacher' as const,
-            is_active: true,
-            class_level: 'Senior Teacher',
-            max_borrow_limit: 10,
-            current_borrowed_count: 2,
-            total_books_borrowed: 15,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            id: 'student-demo-id',
-            email: 'student@idarah.com',
-            full_name: 'Muhammad Ali',
-            name_arabic: 'محمد علي',
-            role: 'student' as const,
-            is_active: true,
-            student_id: 'IWA20240001',
-            class_level: 'Grade 10',
-            max_borrow_limit: 3,
-            current_borrowed_count: 1,
-            total_books_borrowed: 8,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        ];
-        dispatch({ type: 'SET_USERS', payload: demoUsers });
-        return;
-      }
-
       const { data, error } = await usersService.getUsers(filters);
       if (error) {
         dispatch({ type: 'SET_ERROR', payload: error });
@@ -508,46 +509,10 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: (error as Error).message });
     }
-  };
+  }, []);
 
-  const loadBorrowingRecords = async (filters?: any) => {
+  const loadBorrowingRecords = useCallback(async (filters?: BorrowingFilters) => {
     try {
-      // Check if we're in demo mode
-      if (state.user?.id?.includes('demo')) {
-        const demoBorrowingRecords = [
-          {
-            id: '1',
-            user_id: 'student-demo-id',
-            book_id: '1',
-            borrowed_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-            due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            status: 'active' as const,
-            renewal_count: 0,
-            max_renewals: 2,
-            fine_amount: 0,
-            issued_by: 'admin-demo-id',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            id: '2',
-            user_id: 'teacher-demo-id',
-            book_id: '2',
-            borrowed_date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-            due_date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-            status: 'overdue' as const,
-            renewal_count: 1,
-            max_renewals: 2,
-            fine_amount: 6,
-            issued_by: 'admin-demo-id',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        ];
-        dispatch({ type: 'SET_BORROWING_RECORDS', payload: demoBorrowingRecords });
-        return;
-      }
-
       const { data, error } = await borrowingService.getBorrowingRecords(filters);
       if (error) {
         dispatch({ type: 'SET_ERROR', payload: error });
@@ -557,40 +522,10 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: (error as Error).message });
     }
-  };
+  }, []);
 
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     try {
-      // Check if we're in demo mode
-      if (state.user?.id?.includes('demo')) {
-        const demoCategories = [
-          {
-            id: '1',
-            name: 'Quran Studies',
-            name_arabic: 'علوم القرآن',
-            description: 'Studies related to the Holy Quran',
-            category_type: 'quran' as const,
-            display_order: 1,
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            id: '2',
-            name: 'Hadith Sciences',
-            name_arabic: 'علوم الحديث',
-            description: 'Sciences related to Prophetic traditions',
-            category_type: 'hadith' as const,
-            display_order: 2,
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        ];
-        dispatch({ type: 'SET_CATEGORIES', payload: demoCategories });
-        return;
-      }
-
       const { data, error } = await categoriesService.getCategories();
       if (error) {
         dispatch({ type: 'SET_ERROR', payload: error });
@@ -600,96 +535,26 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: (error as Error).message });
     }
-  };
+  }, []);
 
-  const loadDashboardStats = async () => {
+  const loadDashboardStats = useCallback(async () => {
     try {
-      // Check if we're in demo mode
-      if (state.user?.id?.includes('demo')) {
-        const demoDashboardStats: DashboardStats = {
-          books: {
-            total: 2,
-            featured: 2,
-            available: 2,
-            byCategory: { hadith: 1, tafsir: 1 },
-            byLanguage: { en: 1, ar: 1 }
-          },
-          users: {
-            total: 3,
-            active: 3,
-            byRole: { admin: 1, teacher: 1, student: 1 },
-            newThisMonth: 1
-          },
-          borrowing: {
-            totalActive: 1,
-            totalOverdue: 1,
-            totalReturned: 5,
-            totalFines: 6,
-            activeUsers: 2,
-            popularBooks: [
-              {
-                id: '1',
-                title: 'Sahih Al-Bukhari',
-                author: 'Imam Muhammad al-Bukhari',
-                borrowCount: 15
-              } as any
-            ]
-          },
-          categories: {
-            totalCategories: 9,
-            activeCategories: 9,
-            byType: { hadith: 1, tafsir: 1, fiqh: 1, quran: 1, history: 1, biography: 1, aqeedah: 1, dua: 1, islamic_law: 1 }
-          }
-        };
+      // Use enhanced data manager for real database stats
+      const { data: stats, error } = await dataManager.getDashboardStats(state.user?.id);
 
-        dispatch({ type: 'SET_DASHBOARD_STATS', payload: demoDashboardStats });
+      if (error) {
+        dispatch({ type: 'SET_ERROR', payload: error });
         return;
       }
 
-      const [bookStats, userStats, borrowingStats, categoryStats] = await Promise.all([
-        booksService.getBookStatistics(),
-        usersService.getUserStatistics(),
-        borrowingService.getBorrowingStatistics(),
-        categoriesService.getCategoryStatistics()
-      ]);
-
-      const dashboardStats: DashboardStats = {
-        books: {
-          total: bookStats.total,
-          featured: bookStats.featured,
-          available: bookStats.available,
-          byCategory: bookStats.byCategory,
-          byLanguage: bookStats.byLanguage
-        },
-        users: {
-          total: userStats.total,
-          active: userStats.active,
-          byRole: userStats.byRole,
-          newThisMonth: userStats.newThisMonth
-        },
-        borrowing: {
-          totalActive: borrowingStats.totalActive,
-          totalOverdue: borrowingStats.totalOverdue,
-          totalReturned: borrowingStats.totalReturned,
-          totalFines: borrowingStats.totalFines,
-          activeUsers: borrowingStats.activeUsers,
-          popularBooks: borrowingStats.popularBooks
-        },
-        categories: {
-          totalCategories: categoryStats.totalCategories,
-          activeCategories: categoryStats.activeCategories,
-          byType: categoryStats.byType
-        }
-      };
-
-      dispatch({ type: 'SET_DASHBOARD_STATS', payload: dashboardStats });
+      dispatch({ type: 'SET_DASHBOARD_STATS', payload: stats });
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: (error as Error).message });
     }
-  };
+  }, [state.user]);
 
   // Book methods
-  const createBook = async (bookData: any) => {
+  const createBook = async (bookData: CreateBookData) => {
     try {
       const { data, error } = await booksService.createBook(bookData);
       if (error) {
@@ -704,7 +569,7 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateBook = async (id: string, updates: any) => {
+  const updateBook = async (id: string, updates: UpdateBookData) => {
     try {
       const { data, error } = await booksService.updateBook(id, updates);
       if (error) {
@@ -733,7 +598,7 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
   };
 
   // User methods
-  const createUser = async (userData: any) => {
+  const createUser = async (userData: CreateUserData) => {
     try {
       const { data, error } = await usersService.createUser(userData);
       if (error) {
@@ -748,7 +613,7 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateUser = async (id: string, updates: any) => {
+  const updateUser = async (id: string, updates: UpdateUserData) => {
     try {
       const { data, error } = await usersService.updateUser(id, updates);
       if (error) {
@@ -840,7 +705,7 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
   };
 
   // Category methods
-  const createCategory = async (categoryData: any) => {
+  const createCategory = async (categoryData: CreateCategoryData) => {
     try {
       const { data, error } = await categoriesService.createCategory(categoryData);
       if (error) {
@@ -855,7 +720,7 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateCategory = async (id: string, updates: any) => {
+  const updateCategory = async (id: string, updates: UpdateCategoryData) => {
     try {
       const { data, error } = await categoriesService.updateCategory(id, updates);
       if (error) {
@@ -888,7 +753,7 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
     if (!state.profile) return;
 
     try {
-      const { data, error } = await usersService.addBookmark(state.profile.id, bookId);
+      const { error } = await usersService.addBookmark(state.profile.id, bookId);
       if (error) {
         dispatch({ type: 'SET_ERROR', payload: error });
         return;
@@ -903,7 +768,7 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
     if (!state.profile) return;
 
     try {
-      const { data, error } = await usersService.removeBookmark(state.profile.id, bookId);
+      const { error } = await usersService.removeBookmark(state.profile.id, bookId);
       if (error) {
         dispatch({ type: 'SET_ERROR', payload: error });
         return;
@@ -918,7 +783,12 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
     if (!state.profile) return;
 
     try {
-      const { data, error } = await usersService.updateRecentReads(state.profile.id, bookId);
+      // Save to local storage immediately for better UX
+      const currentReads = localStorageService.getRecentReads();
+      const updatedReads = [bookId, ...currentReads.filter(id => id !== bookId)].slice(0, 10);
+      localStorageService.saveRecentReads(updatedReads);
+
+      const { error } = await usersService.updateRecentReads(state.profile.id, bookId);
       if (error) {
         dispatch({ type: 'SET_ERROR', payload: error });
         return;
@@ -928,6 +798,77 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'SET_ERROR', payload: (error as Error).message });
     }
   };
+
+  // Course management methods
+  const loadCourses = useCallback(async (teacherId?: string, classId?: string) => {
+    try {
+      const { data, error } = await coursesService.getCourses(teacherId, classId);
+      if (error) {
+        dispatch({ type: 'SET_ERROR', payload: error });
+        return;
+      }
+      return data;
+    } catch (error) {
+      dispatch({ type: 'SET_ERROR', payload: (error as Error).message });
+    }
+  }, []);
+
+  const createCourse = useCallback(async (courseData: any) => {
+    try {
+      const { data, error } = await dataManager.saveData(
+        `course_${Date.now()}`,
+        courseData,
+        (data) => coursesService.createCourse(data),
+        { autoSave: true }
+      );
+
+      if (error) {
+        dispatch({ type: 'SET_ERROR', payload: error });
+        return { data: null, error };
+      }
+
+      return { data, error: null };
+    } catch (error) {
+      const errorMsg = (error as Error).message;
+      dispatch({ type: 'SET_ERROR', payload: errorMsg });
+      return { data: null, error: errorMsg };
+    }
+  }, []);
+
+  const loadAssignments = useCallback(async (courseId?: string, teacherId?: string, studentId?: string) => {
+    try {
+      const { data, error } = await coursesService.getAssignments(courseId, teacherId, studentId);
+      if (error) {
+        dispatch({ type: 'SET_ERROR', payload: error });
+        return;
+      }
+      return data;
+    } catch (error) {
+      dispatch({ type: 'SET_ERROR', payload: (error as Error).message });
+    }
+  }, []);
+
+  // Draft management methods
+  const saveDraft = useCallback((type: string, id: string, data: any) => {
+    if (!state.user) return false;
+
+    return localStorageService.saveDraft({
+      id,
+      type: type as any,
+      data,
+      userId: state.user.id,
+      timestamp: Date.now(),
+      autoSave: true
+    });
+  }, [state.user]);
+
+  const getDraft = useCallback((type: string, id: string) => {
+    return localStorageService.getDraft(type, id);
+  }, []);
+
+  const clearDraft = useCallback((type: string, id: string) => {
+    return localStorageService.deleteDraft(type, id);
+  }, []);
 
   return (
     <SupabaseAppContext.Provider value={{
@@ -965,6 +906,16 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
       createCategory,
       updateCategory,
       deleteCategory,
+
+      // Course methods
+      loadCourses,
+      createCourse,
+      loadAssignments,
+
+      // Draft management methods
+      saveDraft,
+      getDraft,
+      clearDraft,
 
       // Utility methods
       addBookmark,

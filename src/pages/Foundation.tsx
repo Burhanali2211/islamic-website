@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Users, Award } from 'lucide-react';
-import { useSupabaseApp } from '../context/SupabaseContext';
 
 const leadershipTeam = [
   { name: 'Dr. Abdullah Khan', role: 'Founder & Director', image: 'https://picsum.photos/200/200?random=20', quote: 'Our goal is to make authentic knowledge universally accessible.' },
@@ -10,7 +9,6 @@ const leadershipTeam = [
 ];
 
 export function Foundation() {
-  const { state } = useSupabaseApp();
 
   return (
     <div className="p-6 space-y-12">

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, BookOpen, Target, Eye } from 'lucide-react';
+import { ArrowRight, Target, Eye } from 'lucide-react';
 import { OptimizedImage } from '../ui/OptimizedImage';
 
 export function AboutSection() {

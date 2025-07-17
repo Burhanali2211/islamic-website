@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Target, Users, Eye } from 'lucide-react';
-import { useSupabaseApp } from '../context/SupabaseContext';
 
 const teamMembers = [
   { name: 'Shabir Ahmad', role: 'Chairman', image: '/shabir ahmad.jpg' },
@@ -15,7 +14,6 @@ const teamMembers = [
 ];
 
 export function About() {
-  const { state } = useSupabaseApp();
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 space-y-8 sm:space-y-12 lg:space-y-16">
@@ -28,10 +26,10 @@ export function About() {
           <BookOpen className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-white" />
         </div>
         <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-4 sm:mb-6 px-2">
-          Haqiqat-e-Idarah Wali Ul Aser
+          About IDARAH WALI UL ASER
         </h1>
         <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed px-2">
-          IDARAH WALI UL ASER ek mazhabi tanẓeem hai jo 2005 mein Banpora Chattergam, Kashmir mein qāim kī gaī. Hum Islam kī aseel ta'līmāt, khāss taur par Imam Hussain (AS) kē paighām aur qurbāniyoṅ ko mahfūẓ rakhne aur phailāne kē liye waqf haiṅ. Filhāl ek mukhliṣ jamā'at kē zarī'e chalāyā jā rahā hai, hum digital library aur Maktab Wali Ul Aser donon chalāte haiṅ.
+          IDARAH WALI UL ASER is a religious organization established in 2005 in Banpora Chattergam, Kashmir. We are dedicated to preserving and spreading the authentic teachings of Islam, particularly the message and sacrifices of Imam Hussain (AS). Currently operated by a devoted community, we run both a digital library and Maktab Wali Ul Aser school.
         </p>
       </motion.div>
 
@@ -65,9 +63,9 @@ export function About() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full mb-6 group-hover:shadow-lg transition-shadow">
             <BookOpen className="h-8 w-8 text-white" />
           </div>
-          <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-4">Hamārī Dāstān</h3>
+          <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-4">Our Story</h3>
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-            Islāmī 'ilm ko mahfūẓ rakhnē aur phailānē kī ek 'ājizkārānā koshish kē taur par qāim kiyā gayā, hamārā Idārah ab 'ālamī Ummat kī khidmat karnē wālā Islāmī adab ka jāmi' khazānah ban gayā hai.
+            Established as a humble effort to preserve and spread Islamic knowledge, our organization has become a comprehensive treasury of Islamic literature serving the global Muslim community.
           </p>
         </div>
       </motion.div>

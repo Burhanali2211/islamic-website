@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Moon, Sun, Clock } from 'lucide-react';
 
@@ -22,32 +22,32 @@ interface PrayerTime {
   passed: boolean;
 }
 
+// Hijri months in Arabic
+const hijriMonths = [
+  'محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني', 'جمادى الأولى', 'جمادى الثانية',
+  'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'
+];
+
+// Gregorian months in Arabic
+const gregorianMonthsArabic = [
+  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+];
+
+// Weekdays in Arabic
+const weekdaysArabic = [
+  'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'
+];
+
 export function IslamicCalendarWidget() {
   const [islamicDate, setIslamicDate] = useState<IslamicDate | null>(null);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Hijri months in Arabic
-  const hijriMonths = [
-    'محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني', 'جمادى الأولى', 'جمادى الثانية',
-    'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'
-  ];
-
-  // Gregorian months in Arabic
-  const gregorianMonthsArabic = [
-    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
-  ];
-
-  // Weekdays in Arabic
-  const weekdaysArabic = [
-    'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'
-  ];
-
   // Convert Gregorian to Hijri (simplified approximation)
-  const convertToHijri = (gregorianDate: Date): IslamicDate => {
+  const convertToHijri = useCallback((gregorianDate: Date): IslamicDate => {
     const greg = gregorianDate;
-    
+
     // Simplified Hijri conversion (for demonstration)
     // In a real application, you would use a proper Islamic calendar library
     const hijriEpoch = new Date('622-07-16'); // Approximate start of Islamic calendar
@@ -69,7 +69,7 @@ export function IslamicCalendarWidget() {
       weekday: greg.toLocaleDateString('en-US', { weekday: 'long' }),
       weekdayArabic: weekdaysArabic[greg.getDay()]
     };
-  };
+  }, []);
 
   // Sample prayer times (in a real app, you'd fetch from an API)
   const getSamplePrayerTimes = (): PrayerTime[] => {
@@ -107,7 +107,7 @@ export function IslamicCalendarWidget() {
     const interval = setInterval(updateDateTime, 60000); // Update every minute
 
     return () => clearInterval(interval);
-  }, []);
+  }, [convertToHijri]);
 
   const getNextPrayer = () => {
     const nextPrayer = prayerTimes.find(prayer => !prayer.passed);
@@ -125,7 +125,7 @@ export function IslamicCalendarWidget() {
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center space-x-2">
           <Calendar className="h-5 w-5 text-green-600" />
-          <span>التقويم الإسلامي - Islamic Calendar</span>
+          <span>Islamic Calendar</span>
         </h3>
         <div className="flex items-center space-x-2 text-sm text-gray-500">
           <Clock className="h-4 w-4" />
@@ -174,7 +174,7 @@ export function IslamicCalendarWidget() {
           {/* Prayer Times */}
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              مواقيت الصلاة - Prayer Times
+              Prayer Times
             </h4>
             {prayerTimes.map((prayer, index) => (
               <div 
@@ -213,7 +213,7 @@ export function IslamicCalendarWidget() {
           {/* Quranic Verse of the Day */}
           <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
             <h4 className="text-sm font-medium text-purple-800 dark:text-purple-200 mb-2">
-              آية اليوم - Verse of the Day
+              Verse of the Day
             </h4>
             <div className="text-sm text-purple-700 dark:text-purple-300" dir="rtl">
               <p className="font-arabic text-base leading-relaxed mb-2">

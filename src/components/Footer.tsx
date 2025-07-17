@@ -1,9 +1,7 @@
 import React from 'react';
 import { BookOpen, Mail, Heart } from 'lucide-react';
-import { useSupabaseApp } from '../context/SupabaseContext';
 
 export function Footer() {
-  const { state } = useSupabaseApp();
 
   return (
     <footer className="glass-footer backdrop-blur-xl bg-white/85 dark:bg-gray-900/85 border-t border-white/20 dark:border-gray-700/30 mt-12 sm:mt-16 lg:mt-20 islamic-pattern">

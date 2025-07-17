@@ -142,7 +142,7 @@ export function BookCard({ book }: BookCardProps) {
           </h3>
           <div className="flex items-center space-x-1 text-gray-200">
             <User className="h-3 w-3" />
-            <p className="text-sm line-clamp-1" style={{textShadow: '0 1px 3px rgba(0,0,0,0.8)'}}>{book.author}</p>
+            <p className="text-sm line-clamp-1" style={{textShadow: '0 1px 3px rgba(0,0,0,0.8)'}}>{book.author_name}</p>
           </div>
         </div>
       </div>

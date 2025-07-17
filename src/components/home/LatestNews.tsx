@@ -2,7 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Calendar } from 'lucide-react';
-import { useSupabaseApp } from '../../context/SupabaseContext';
 
 const newsItems = [
   {
@@ -23,7 +22,6 @@ const newsItems = [
 ];
 
 export function LatestNews() {
-  const { state } = useSupabaseApp();
 
   return (
     <section className="py-12 sm:py-16">

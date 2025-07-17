@@ -1,9 +1,13 @@
 import React from 'react';
-import { Search, Moon, Sun, Bell } from 'lucide-react';
+import { Search, Moon, Sun, Bell, Menu } from 'lucide-react';
 import { useSupabaseApp } from '../context/SupabaseContext';
 import { UserMenu } from './UserMenu';
 
-export function Header() {
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export function Header({ onMenuClick }: HeaderProps) {
   const { state, dispatch } = useSupabaseApp();
 
   const toggleTheme = () => {
@@ -15,9 +19,17 @@ export function Header() {
   };
 
   return (
-    <header className="glass-header backdrop-blur-xl bg-white/85 dark:bg-gray-950/85 border-b border-white/20 dark:border-gray-700/50">
+    <header className="sticky top-0 z-30 backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
       <div className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
         <div className="flex items-center justify-between gap-4">
+          {/* Mobile menu button */}
+          <button
+            onClick={onMenuClick}
+            className="lg:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+          </button>
+
           {/* Search Bar */}
           <div className="flex-1 max-w-xl lg:max-w-2xl">
             <div className="relative">

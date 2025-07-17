@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Calendar, MapPin, BookOpen, Award, Settings, Camera } from 'lucide-react';
+import { Mail, Calendar, Award, Settings, Camera } from 'lucide-react';
 import { useSupabaseApp } from '../context/SupabaseContext';
 
 export function Profile() {
@@ -11,23 +11,11 @@ export function Profile() {
     return <div>Loading profile...</div>;
   }
 
-  const stats = {
-    booksRead: 24,
-    studyHours: 142,
-    quizzes: 12,
-    notes: 45
-  };
-
   const badges = [
     { name: 'First Book', description: 'Completed your first book', color: 'from-green-500 to-emerald-500' },
     { name: 'Quiz Master', description: 'Scored 90%+ in 3 quizzes', color: 'from-blue-500 to-cyan-500' },
     { name: 'Study Streak', description: '7 days continuous study', color: 'from-purple-500 to-pink-500' },
     { name: 'Note Taker', description: 'Created 50+ study notes', color: 'from-orange-500 to-red-500' },
-  ];
-
-  const recentActivity = [
-    { activity: 'Completed "Tafsir Ibn Kathir"', date: '2 days ago', type: 'book' },
-    { activity: 'Scored 92% in Hadith Quiz', date: '4 days ago', type: 'quiz' },
   ];
 
   return (

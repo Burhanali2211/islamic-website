@@ -1,9 +1,9 @@
 import { supabase } from '../lib/supabase';
 import type { Database } from '../lib/supabase';
 
-type IslamicCategory = Database['public']['Tables']['islamic_categories']['Row'];
-type CategoryInsert = Database['public']['Tables']['islamic_categories']['Insert'];
-type CategoryUpdate = Database['public']['Tables']['islamic_categories']['Update'];
+type IslamicCategory = Database['public']['Tables']['categories']['Row'];
+type CategoryInsert = Database['public']['Tables']['categories']['Insert'];
+type CategoryUpdate = Database['public']['Tables']['categories']['Update'];
 
 export interface CategoryResponse {
   data: IslamicCategory[] | IslamicCategory | null;
@@ -16,10 +16,10 @@ class CategoriesService {
   async getCategories(): Promise<CategoryResponse> {
     try {
       const { data, error } = await supabase
-        .from('islamic_categories')
+        .from('categories')
         .select('*')
         .eq('is_active', true)
-        .order('display_order', { ascending: true })
+        .order('sort_order', { ascending: true })
         .order('name', { ascending: true });
 
       if (error) {
@@ -36,7 +36,7 @@ class CategoriesService {
   async getCategoryById(id: string): Promise<CategoryResponse> {
     try {
       const { data, error } = await supabase
-        .from('islamic_categories')
+        .from('categories')
         .select('*')
         .eq('id', id)
         .single();
@@ -55,11 +55,11 @@ class CategoriesService {
   async getCategoriesByType(categoryType: string): Promise<CategoryResponse> {
     try {
       const { data, error } = await supabase
-        .from('islamic_categories')
+        .from('categories')
         .select('*')
         .eq('category_type', categoryType)
         .eq('is_active', true)
-        .order('display_order', { ascending: true });
+        .order('sort_order', { ascending: true });
 
       if (error) {
         return { data: null, error: error.message };
@@ -75,7 +75,7 @@ class CategoriesService {
   async createCategory(categoryData: CategoryInsert): Promise<CategoryResponse> {
     try {
       const { data, error } = await supabase
-        .from('islamic_categories')
+        .from('categories')
         .insert({
           ...categoryData,
           created_at: new Date().toISOString(),
@@ -98,7 +98,7 @@ class CategoriesService {
   async updateCategory(id: string, updates: CategoryUpdate): Promise<CategoryResponse> {
     try {
       const { data, error } = await supabase
-        .from('islamic_categories')
+        .from('categories')
         .update({
           ...updates,
           updated_at: new Date().toISOString()
@@ -121,7 +121,7 @@ class CategoriesService {
   async deleteCategory(id: string): Promise<{ error: string | null }> {
     try {
       const { error } = await supabase
-        .from('islamic_categories')
+        .from('categories')
         .delete()
         .eq('id', id);
 
@@ -135,22 +135,22 @@ class CategoriesService {
   async getHierarchicalCategories(): Promise<CategoryResponse> {
     try {
       const { data: allCategories, error } = await supabase
-        .from('islamic_categories')
+        .from('categories')
         .select('*')
         .eq('is_active', true)
-        .order('display_order', { ascending: true });
+        .order('sort_order', { ascending: true });
 
       if (error) {
         return { data: null, error: error.message };
       }
 
       // Organize into hierarchical structure
-      const parentCategories = allCategories.filter(cat => !cat.parent_category_id);
-      const childCategories = allCategories.filter(cat => cat.parent_category_id);
+      const parentCategories = allCategories.filter(cat => !cat.parent_id);
+      const childCategories = allCategories.filter(cat => cat.parent_id);
 
       const hierarchical = parentCategories.map(parent => ({
         ...parent,
-        children: childCategories.filter(child => child.parent_category_id === parent.id)
+        children: childCategories.filter(child => child.parent_id === parent.id)
       }));
 
       return { data: hierarchical, error: null };

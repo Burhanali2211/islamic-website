@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { SupabaseAppProvider } from './context/SupabaseContext';
 import { AnimatePresence } from 'framer-motion';
 
@@ -29,6 +29,9 @@ const Login = React.lazy(() => import('./pages/Login').then(module => ({ default
 const Register = React.lazy(() => import('./pages/Register').then(module => ({ default: module.Register })));
 const NotFound = React.lazy(() => import('./pages/NotFound').then(module => ({ default: module.NotFound })));
 
+// Test component
+const AuthTest = React.lazy(() => import('./components/AuthTest').then(module => ({ default: module.AuthTest })));
+
 // Lazy load student pages
 const StudentDashboard = React.lazy(() => import('./pages/StudentDashboard').then(module => ({ default: module.StudentDashboard })));
 const StudyPlans = React.lazy(() => import('./pages/StudyPlans').then(module => ({ default: module.StudyPlans })));
@@ -52,11 +55,13 @@ const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard').t
 const ManageBooks = React.lazy(() => import('./pages/admin/ManageBooks').then(module => ({ default: module.ManageBooks })));
 const ManageUsers = React.lazy(() => import('./pages/admin/ManageUsers').then(module => ({ default: module.ManageUsers })));
 const ManageBorrowing = React.lazy(() => import('./pages/admin/ManageBorrowing').then(module => ({ default: module.ManageBorrowing })));
+const AdminSettings = React.lazy(() => import('./pages/admin/AdminSettings').then(module => ({ default: module.AdminSettings })));
+const AdminReports = React.lazy(() => import('./pages/admin/AdminReports').then(module => ({ default: module.AdminReports })));
 
 function AnimatedRoutes() {
   const location = useLocation();
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
         {/* Public Routes */}
         <Route element={<PublicLayout />}>
@@ -71,6 +76,7 @@ function AnimatedRoutes() {
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/auth-test" element={<AuthTest />} />
 
         {/* Dashboard Routes */}
         <Route element={<DashboardLayout />}>
@@ -90,10 +96,13 @@ function AnimatedRoutes() {
           <Route path="/teacher/grading" element={<ProtectedRoute allowedRoles={['teacher']}><GradingCenter /></ProtectedRoute>} />
           
           {/* Admin Routes */}
-          <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/books" element={<ProtectedRoute allowedRoles={['admin']}><ManageBooks /></ProtectedRoute>} />
           <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><ManageUsers /></ProtectedRoute>} />
           <Route path="/admin/borrowing" element={<ProtectedRoute allowedRoles={['admin']}><ManageBorrowing /></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={['admin']}><AdminSettings /></ProtectedRoute>} />
+          <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={['admin']}><AdminReports /></ProtectedRoute>} />
 
           {/* Shared Profile Route */}
           <Route path="/profile" element={<ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}><Profile /></ProtectedRoute>} />

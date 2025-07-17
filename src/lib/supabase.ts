@@ -1,10 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase configuration for IDARAH WALI UL ASER Islamic Library
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dzuzcssqvgcvqddjctqg.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6dXpjc3NxdmdjdnFkZGpjdHFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1NTQ2NDUsImV4cCI6MjA2NjEzMDY0NX0.rd3zI6EpmKNiRF1E4HlEBoMMzTIl7HKhdgj6cNSMuKM';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://bxyzvaujvhumupwdmysh.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4eXp2YXVqdmh1bXVwd2RteXNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI3MTI3OTgsImV4cCI6MjA2ODI4ODc5OH0.qSJ3Dqr-jza_mEJu0byxChZO8AVTHV3yUrW8zbrjOO4';
+const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4eXp2YXVqdmh1bXVwd2RteXNoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjcxMjc5OCwiZXhwIjoyMDY4Mjg4Nzk4fQ.VABQbqQOcmqih7Z7jB-O43-xSCvckNBPyXYJ6doirzU';
 
-// Create Supabase client
+// Create Supabase client for regular operations
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
@@ -18,6 +19,14 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
+// Create Supabase admin client for service operations (profile creation, etc.)
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
+
 // Database types for TypeScript
 export interface Database {
   public: {
@@ -27,29 +36,42 @@ export interface Database {
           id: string;
           title: string;
           title_arabic?: string;
-          author: string;
+          subtitle?: string;
+          subtitle_arabic?: string;
+          author_id?: string;
+          author_name: string;
           author_arabic?: string;
-          category: 'quran' | 'hadith' | 'fiqh' | 'tafsir' | 'history' | 'biography' | 'aqeedah' | 'seerah' | 'dua' | 'islamic_law';
+          publisher_id?: string;
+          publisher_name?: string;
+          publisher_arabic?: string;
+          category_id?: string;
+          category: 'quran' | 'hadith' | 'fiqh' | 'tafsir' | 'aqeedah' | 'seerah' | 'history' | 'biography' | 'dua' | 'islamic_law' | 'arabic_language' | 'islamic_ethics' | 'comparative_religion' | 'islamic_philosophy' | 'sufism' | 'general';
           subcategory?: string;
           description?: string;
           description_arabic?: string;
-          cover_image_url?: string;
           language: 'ar' | 'en' | 'ur' | 'fa' | 'tr';
+          isbn?: string;
+          pages?: number;
+          edition?: number;
+          published_date?: string;
+          cover_image_url?: string;
           file_url?: string;
           file_type?: 'pdf' | 'epub' | 'audio' | 'video';
-          isbn?: string;
-          publisher?: string;
-          publisher_arabic?: string;
-          published_date?: string;
-          pages?: number;
-          download_count?: number;
-          rating?: number;
-          rating_count?: number;
-          tags?: string[];
-          is_featured?: boolean;
-          is_available?: boolean;
+          file_size_mb?: number;
           physical_copies?: number;
           digital_copies?: number;
+          available_copies?: number;
+          is_available?: boolean;
+          location_shelf?: string;
+          location_section?: string;
+          download_count?: number;
+          borrow_count?: number;
+          rating?: number;
+          rating_count?: number;
+          is_featured?: boolean;
+          is_recommended?: boolean;
+          age_restriction?: number;
+          tags?: string[];
           created_at?: string;
           updated_at?: string;
         };
@@ -57,29 +79,42 @@ export interface Database {
           id?: string;
           title: string;
           title_arabic?: string;
-          author: string;
+          subtitle?: string;
+          subtitle_arabic?: string;
+          author_id?: string;
+          author_name: string;
           author_arabic?: string;
-          category: 'quran' | 'hadith' | 'fiqh' | 'tafsir' | 'history' | 'biography' | 'aqeedah' | 'seerah' | 'dua' | 'islamic_law';
+          publisher_id?: string;
+          publisher_name?: string;
+          publisher_arabic?: string;
+          category_id?: string;
+          category: 'quran' | 'hadith' | 'fiqh' | 'tafsir' | 'aqeedah' | 'seerah' | 'history' | 'biography' | 'dua' | 'islamic_law' | 'arabic_language' | 'islamic_ethics' | 'comparative_religion' | 'islamic_philosophy' | 'sufism' | 'general';
           subcategory?: string;
           description?: string;
           description_arabic?: string;
-          cover_image_url?: string;
           language?: 'ar' | 'en' | 'ur' | 'fa' | 'tr';
+          isbn?: string;
+          pages?: number;
+          edition?: number;
+          published_date?: string;
+          cover_image_url?: string;
           file_url?: string;
           file_type?: 'pdf' | 'epub' | 'audio' | 'video';
-          isbn?: string;
-          publisher?: string;
-          publisher_arabic?: string;
-          published_date?: string;
-          pages?: number;
-          download_count?: number;
-          rating?: number;
-          rating_count?: number;
-          tags?: string[];
-          is_featured?: boolean;
-          is_available?: boolean;
+          file_size_mb?: number;
           physical_copies?: number;
           digital_copies?: number;
+          available_copies?: number;
+          is_available?: boolean;
+          location_shelf?: string;
+          location_section?: string;
+          download_count?: number;
+          borrow_count?: number;
+          rating?: number;
+          rating_count?: number;
+          is_featured?: boolean;
+          is_recommended?: boolean;
+          age_restriction?: number;
+          tags?: string[];
           created_at?: string;
           updated_at?: string;
         };
@@ -87,29 +122,42 @@ export interface Database {
           id?: string;
           title?: string;
           title_arabic?: string;
-          author?: string;
+          subtitle?: string;
+          subtitle_arabic?: string;
+          author_id?: string;
+          author_name?: string;
           author_arabic?: string;
-          category?: 'quran' | 'hadith' | 'fiqh' | 'tafsir' | 'history' | 'biography' | 'aqeedah' | 'seerah' | 'dua' | 'islamic_law';
+          publisher_id?: string;
+          publisher_name?: string;
+          publisher_arabic?: string;
+          category_id?: string;
+          category?: 'quran' | 'hadith' | 'fiqh' | 'tafsir' | 'aqeedah' | 'seerah' | 'history' | 'biography' | 'dua' | 'islamic_law' | 'arabic_language' | 'islamic_ethics' | 'comparative_religion' | 'islamic_philosophy' | 'sufism' | 'general';
           subcategory?: string;
           description?: string;
           description_arabic?: string;
-          cover_image_url?: string;
           language?: 'ar' | 'en' | 'ur' | 'fa' | 'tr';
+          isbn?: string;
+          pages?: number;
+          edition?: number;
+          published_date?: string;
+          cover_image_url?: string;
           file_url?: string;
           file_type?: 'pdf' | 'epub' | 'audio' | 'video';
-          isbn?: string;
-          publisher?: string;
-          publisher_arabic?: string;
-          published_date?: string;
-          pages?: number;
-          download_count?: number;
-          rating?: number;
-          rating_count?: number;
-          tags?: string[];
-          is_featured?: boolean;
-          is_available?: boolean;
+          file_size_mb?: number;
           physical_copies?: number;
           digital_copies?: number;
+          available_copies?: number;
+          is_available?: boolean;
+          location_shelf?: string;
+          location_section?: string;
+          download_count?: number;
+          borrow_count?: number;
+          rating?: number;
+          rating_count?: number;
+          is_featured?: boolean;
+          is_recommended?: boolean;
+          age_restriction?: number;
+          tags?: string[];
           created_at?: string;
           updated_at?: string;
         };
@@ -259,16 +307,16 @@ export interface Database {
           updated_at?: string;
         };
       };
-      islamic_categories: {
+      categories: {
         Row: {
           id: string;
           name: string;
           name_arabic?: string;
           description?: string;
           description_arabic?: string;
-          parent_category_id?: string;
-          category_type: 'quran' | 'hadith' | 'fiqh' | 'tafsir' | 'history' | 'biography' | 'aqeedah' | 'seerah' | 'dua' | 'islamic_law';
-          display_order?: number;
+          parent_id?: string;
+          category_type: 'quran' | 'hadith' | 'fiqh' | 'tafsir' | 'aqeedah' | 'seerah' | 'history' | 'biography' | 'dua' | 'islamic_law' | 'arabic_language' | 'islamic_ethics' | 'comparative_religion' | 'islamic_philosophy' | 'sufism' | 'general';
+          sort_order?: number;
           is_active?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -279,9 +327,9 @@ export interface Database {
           name_arabic?: string;
           description?: string;
           description_arabic?: string;
-          parent_category_id?: string;
-          category_type: 'quran' | 'hadith' | 'fiqh' | 'tafsir' | 'history' | 'biography' | 'aqeedah' | 'seerah' | 'dua' | 'islamic_law';
-          display_order?: number;
+          parent_id?: string;
+          category_type: 'quran' | 'hadith' | 'fiqh' | 'tafsir' | 'aqeedah' | 'seerah' | 'history' | 'biography' | 'dua' | 'islamic_law' | 'arabic_language' | 'islamic_ethics' | 'comparative_religion' | 'islamic_philosophy' | 'sufism' | 'general';
+          sort_order?: number;
           is_active?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -292,9 +340,9 @@ export interface Database {
           name_arabic?: string;
           description?: string;
           description_arabic?: string;
-          parent_category_id?: string;
-          category_type?: 'quran' | 'hadith' | 'fiqh' | 'tafsir' | 'history' | 'biography' | 'aqeedah' | 'seerah' | 'dua' | 'islamic_law';
-          display_order?: number;
+          parent_id?: string;
+          category_type?: 'quran' | 'hadith' | 'fiqh' | 'tafsir' | 'aqeedah' | 'seerah' | 'history' | 'biography' | 'dua' | 'islamic_law' | 'arabic_language' | 'islamic_ethics' | 'comparative_religion' | 'islamic_philosophy' | 'sufism' | 'general';
+          sort_order?: number;
           is_active?: boolean;
           created_at?: string;
           updated_at?: string;

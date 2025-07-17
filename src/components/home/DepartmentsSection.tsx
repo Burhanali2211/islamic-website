@@ -1,10 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { School, Library, Heart, Users } from 'lucide-react';
-import { useSupabaseApp } from '../../context/SupabaseContext';
 
 export function DepartmentsSection() {
-  const { state } = useSupabaseApp();
 
   const departments = [
     { name: 'Maktab Wali Ul Aser', description: 'Our educational institution providing authentic Islamic learning and spiritual development for students of all ages.', icon: School, color: 'text-green-500' },

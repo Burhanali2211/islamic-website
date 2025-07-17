@@ -1,39 +1,69 @@
+import { Session } from '@supabase/supabase-js';
+
 export interface Book {
   id: string;
   title: string;
   title_arabic?: string;
-  author: string;
+  subtitle?: string;
+  subtitle_arabic?: string;
+  author_id?: string;
+  author_name: string;
   author_arabic?: string;
+  publisher_id?: string;
+  publisher_name?: string;
+  publisher_arabic?: string;
+  category_id?: string;
   category: BookCategory;
   subcategory?: string;
   description?: string;
   description_arabic?: string;
-  cover_image_url?: string;
   language: LanguageType;
+  isbn?: string;
+  pages?: number;
+  edition?: number;
+  published_date?: string;
+  cover_image_url?: string;
   file_url?: string;
   file_type?: FileType;
-  isbn?: string;
-  publisher?: string;
-  publisher_arabic?: string;
-  published_date?: string;
-  pages?: number;
-  download_count?: number;
-  rating?: number;
-  rating_count?: number;
-  tags?: string[];
-  is_featured?: boolean;
-  is_available?: boolean;
+  file_size_mb?: number;
   physical_copies?: number;
   digital_copies?: number;
+  available_copies?: number;
+  is_available?: boolean;
+  location_shelf?: string;
+  location_section?: string;
+  download_count?: number;
+  borrow_count?: number;
+  rating?: number;
+  rating_count?: number;
+  is_featured?: boolean;
+  is_recommended?: boolean;
+  age_restriction?: number;
+  tags?: string[];
   created_at?: string;
   updated_at?: string;
 }
 
-export type BookCategory = 'quran' | 'hadith' | 'fiqh' | 'tafsir' | 'history' | 'biography' | 'aqeedah' | 'seerah' | 'dua' | 'islamic_law';
+export type BookCategory = 'quran' | 'hadith' | 'fiqh' | 'tafsir' | 'aqeedah' | 'seerah' | 'history' | 'biography' | 'dua' | 'islamic_law' | 'arabic_language' | 'islamic_ethics' | 'comparative_religion' | 'islamic_philosophy' | 'sufism' | 'general';
 export type LanguageType = 'ar' | 'en' | 'ur' | 'fa' | 'tr';
 export type FileType = 'pdf' | 'epub' | 'audio' | 'video';
 export type UserRole = 'admin' | 'teacher' | 'student';
 export type BorrowingStatus = 'active' | 'returned' | 'overdue' | 'lost';
+
+export interface IslamicCategory {
+  id: string;
+  name: string;
+  name_arabic?: string;
+  description?: string;
+  description_arabic?: string;
+  parent_id?: string;
+  category_type: BookCategory;
+  sort_order?: number;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  children?: IslamicCategory[];
+}
 
 export interface User {
   id: string;
@@ -305,7 +335,7 @@ export interface AuthUser {
 export interface AuthResponse {
   user: AuthUser | null;
   profile: User | null;
-  session: any;
+  session: Session | null;
   error: string | null;
 }
 
@@ -343,4 +373,98 @@ export interface SearchFilters {
   category?: string;
   language?: string;
   role?: UserRole;
+}
+
+// Filter types for data loading
+export interface BookFilters {
+  category?: BookCategory;
+  language?: LanguageType;
+  author?: string;
+  is_featured?: boolean;
+  is_available?: boolean;
+  search?: string;
+}
+
+export interface UserFilters {
+  role?: UserRole;
+  is_active?: boolean;
+  search?: string;
+}
+
+export interface BorrowingFilters {
+  status?: BorrowingStatus;
+  user_id?: string;
+  book_id?: string;
+  overdue?: boolean;
+  search?: string;
+}
+
+// Data creation/update types
+export interface CreateBookData {
+  title: string;
+  title_arabic?: string;
+  author: string;
+  author_arabic?: string;
+  category: BookCategory;
+  subcategory?: string;
+  description?: string;
+  description_arabic?: string;
+  cover_image_url?: string;
+  language: LanguageType;
+  file_url?: string;
+  file_type?: FileType;
+  isbn?: string;
+  publisher?: string;
+  publisher_arabic?: string;
+  published_date?: string;
+  pages?: number;
+  tags?: string[];
+  is_featured?: boolean;
+  is_available?: boolean;
+  physical_copies?: number;
+  digital_copies?: number;
+}
+
+export type UpdateBookData = Partial<CreateBookData>;
+
+export interface CreateUserData {
+  email: string;
+  full_name?: string;
+  name_arabic?: string;
+  avatar_url?: string;
+  phone?: string;
+  date_of_birth?: string;
+  gender?: 'male' | 'female';
+  role?: UserRole;
+  guardian_name?: string;
+  guardian_phone?: string;
+  student_id?: string;
+  address?: string;
+  emergency_contact?: string;
+  enrollment_date?: string;
+  class_level?: string;
+  is_active?: boolean;
+}
+
+export type UpdateUserData = Partial<CreateUserData>;
+
+export interface CreateCategoryData {
+  name: string;
+  name_arabic?: string;
+  description?: string;
+  description_arabic?: string;
+  parent_id?: string;
+  icon?: string;
+  color?: string;
+  is_active?: boolean;
+}
+
+export type UpdateCategoryData = Partial<CreateCategoryData>;
+
+// User borrowing summary interface
+export interface UserBorrowingSummary {
+  currentBorrowed: number;
+  maxLimit: number;
+  overdueCount: number;
+  totalBorrowed: number;
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { StickyNote, Plus, Search, Tag, Calendar, BookOpen, Edit, Trash2 } from 'lucide-react';
+import { StickyNote, Plus, Search, BookOpen, Edit, Trash2 } from 'lucide-react';
 
 export function Notes() {
   const [searchQuery, setSearchQuery] = React.useState('');

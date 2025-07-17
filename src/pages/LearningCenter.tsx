@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { School, Book, Users, Star } from 'lucide-react';
-import { useSupabaseApp } from '../context/SupabaseContext';
+import { School, Book, Star } from 'lucide-react';
 
 const courses = [
   { title: 'Quranic Tafsir', instructor: 'Dr. Yusuf Ahmed', duration: '12 Weeks', level: 'Intermediate', icon: Book },
@@ -16,7 +15,6 @@ const faculty = [
 ];
 
 export function LearningCenter() {
-  const { state } = useSupabaseApp();
 
   const testimonials = [
     { name: 'Ahmed Hassan', quote: 'The structured approach to Islamic education here has transformed my understanding of the Deen. The teachers are knowledgeable and patient.', image: 'https://i.pravatar.cc/150?u=student1' },
@@ -32,7 +30,7 @@ export function LearningCenter() {
       >
         <School className="h-16 w-16 mx-auto text-green-500 mb-4" />
         <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-4">
-          Darsgah-e-Wali Ul Aser
+          Wali Ul Aser Learning Center
         </h1>
         <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
           Nurturing the next generation of scholars and knowledgeable Muslims through structured, authentic Islamic education.
@@ -67,7 +65,7 @@ export function LearningCenter() {
                   <span>{course.level}</span>
                 </div>
                 <button className="mt-6 neomorph-button px-6 py-3 rounded-xl font-medium text-white bg-gradient-to-r from-green-500 to-blue-500 hover:scale-105 transition-transform">
-                  Mazeed Maloomat
+                  Learn More
                 </button>
               </motion.div>
             );

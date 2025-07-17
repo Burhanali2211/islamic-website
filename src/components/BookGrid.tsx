@@ -1,7 +1,6 @@
 import React from 'react';
 import { BookCard } from './BookCard';
 import { useSupabaseApp } from '../context/SupabaseContext';
-import { Book } from '../types';
 
 interface BookGridProps {
   viewMode?: 'grid' | 'list';
@@ -23,9 +22,9 @@ export function BookGrid({ viewMode = 'grid' }: BookGridProps) {
       const query = state.searchQuery.toLowerCase();
       books = books.filter(book =>
         book.title.toLowerCase().includes(query) ||
-        book.author.toLowerCase().includes(query) ||
-        book.description.toLowerCase().includes(query) ||
-        book.tags.some(tag => tag.toLowerCase().includes(query))
+        book.author_name.toLowerCase().includes(query) ||
+        book.description?.toLowerCase().includes(query) ||
+        book.tags?.some(tag => tag.toLowerCase().includes(query))
       );
     }
 

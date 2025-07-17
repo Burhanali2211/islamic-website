@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useSupabaseApp } from '../../context/SupabaseContext';
@@ -22,7 +22,7 @@ export function ManageUsers() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (userId: string) => {
+  const handleDelete = useCallback(async (userId: string) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         await deleteUser(userId);
@@ -30,7 +30,7 @@ export function ManageUsers() {
         console.error('Error deleting user:', error);
       }
     }
-  };
+  }, [deleteUser]);
 
   const columns = useMemo(() => [
     { 
@@ -60,7 +60,7 @@ export function ManageUsers() {
         </div>
       ),
     },
-  ], [dispatch]);
+  ], [handleDelete]);
 
   return (
     <div className="p-6 space-y-8">

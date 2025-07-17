@@ -22,9 +22,9 @@ export function Home() {
   }, [state.books]);
 
   const stats = [
-    { icon: BookOpen, label: 'Kutub', value: state.books.length, color: 'from-green-500 to-emerald-500', description: 'Islami Kitaben' },
-    { icon: TrendingUp, label: 'Downloads', value: '15.2K', color: 'from-blue-500 to-cyan-500', description: 'Mutala Kiya Gaya' },
-    { icon: Users, label: 'Talib-e-Ilm', value: '2.8K', color: 'from-purple-500 to-pink-500', description: 'Registered Students' },
+    { icon: BookOpen, label: 'Books', value: state.books.length, color: 'from-green-500 to-emerald-500', description: 'Islamic Books' },
+    { icon: TrendingUp, label: 'Downloads', value: '15.2K', color: 'from-blue-500 to-cyan-500', description: 'Books Downloaded' },
+    { icon: Users, label: 'Students', value: '2.8K', color: 'from-purple-500 to-pink-500', description: 'Registered Students' },
     { icon: Star, label: 'Rating', value: '4.8', color: 'from-gold to-yellow-500', description: 'Average Rating' },
   ];
 

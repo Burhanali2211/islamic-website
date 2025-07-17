@@ -39,11 +39,11 @@ class BooksService {
       }
 
       if (filters?.author) {
-        query = query.ilike('author', `%${filters.author}%`);
+        query = query.ilike('author_name', `%${filters.author}%`);
       }
 
       if (filters?.search) {
-        query = query.or(`title.ilike.%${filters.search}%,author.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+        query = query.or(`title.ilike.%${filters.search}%,author_name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
       }
 
       if (filters?.isFeatured !== undefined) {
@@ -166,7 +166,7 @@ class BooksService {
   // Increment download count
   async incrementDownloadCount(id: string): Promise<BookResponse> {
     try {
-      const { data, error } = await supabase.rpc('increment_download_count', {
+      const { error } = await supabase.rpc('increment_download_count', {
         book_id: id
       });
 

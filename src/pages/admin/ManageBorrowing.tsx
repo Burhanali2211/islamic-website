@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Filter, Calendar, AlertTriangle, CheckCircle, Clock, RotateCcw } from 'lucide-react';
+import { Plus, Search, Calendar, AlertTriangle, CheckCircle, Clock, RotateCcw } from 'lucide-react';
 import { useSupabaseApp } from '../../context/SupabaseContext';
 import { DataTable } from '../../components/ui/DataTable';
 import { Modal } from '../../components/ui/Modal';
@@ -19,14 +19,14 @@ export function ManageBorrowing() {
     loadBorrowingRecords();
     loadBooks();
     loadUsers();
-  }, []);
+  }, [loadBorrowingRecords, loadBooks, loadUsers]);
 
   const handleNewBorrowing = () => {
     setSelectedRecord(undefined);
     setIsModalOpen(true);
   };
 
-  const handleReturnBook = async (borrowingId: string) => {
+  const handleReturnBook = useCallback(async (borrowingId: string) => {
     if (window.confirm('هل أنت متأكد من إرجاع هذا الكتاب؟ - Are you sure you want to return this book?')) {
       setIsLoading(true);
       try {
@@ -38,9 +38,9 @@ export function ManageBorrowing() {
         setIsLoading(false);
       }
     }
-  };
+  }, [returnBook, state.profile?.id, loadBorrowingRecords]);
 
-  const handleRenewBook = async (borrowingId: string) => {
+  const handleRenewBook = useCallback(async (borrowingId: string) => {
     if (window.confirm('هل تريد تجديد استعارة هذا الكتاب؟ - Do you want to renew this book borrowing?')) {
       setIsLoading(true);
       try {
@@ -52,7 +52,7 @@ export function ManageBorrowing() {
         setIsLoading(false);
       }
     }
-  };
+  }, [renewBook, loadBorrowingRecords]);
 
   const filteredRecords = useMemo(() => {
     let records = state.borrowingRecords;
@@ -189,20 +189,28 @@ export function ManageBorrowing() {
             <>
               <button
                 onClick={() => handleReturnBook(record.id)}
-                className="neomorph-button p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20"
-                title="إرجاع الكتاب - Return Book"
+                className="btn-icon bg-green-50 dark:bg-green-900/20 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/40 group disabled:opacity-50"
+                title="Return Book"
                 disabled={isLoading}
               >
-                <CheckCircle size={16} className="text-green-600" />
+                {isLoading ? (
+                  <div className="loading-spinner w-4 h-4" />
+                ) : (
+                  <CheckCircle size={16} className="transition-transform group-hover:scale-110" />
+                )}
               </button>
               {(record.renewal_count || 0) < (record.max_renewals || 2) && (
                 <button
                   onClick={() => handleRenewBook(record.id)}
-                  className="neomorph-button p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                  title="تجديد الاستعارة - Renew Borrowing"
+                  className="btn-icon bg-blue-50 dark:bg-blue-900/20 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/40 group disabled:opacity-50"
+                  title="Renew Borrowing"
                   disabled={isLoading}
                 >
-                  <RotateCcw size={16} className="text-blue-600" />
+                  {isLoading ? (
+                    <div className="loading-spinner w-4 h-4" />
+                  ) : (
+                    <RotateCcw size={16} className="transition-transform group-hover:rotate-180" />
+                  )}
                 </button>
               )}
             </>
@@ -210,7 +218,7 @@ export function ManageBorrowing() {
         </div>
       ),
     },
-  ], [state.books, state.users, isLoading]);
+  ], [state.books, state.users, isLoading, handleRenewBook, handleReturnBook]);
 
   return (
     <div className="p-6 space-y-8">
@@ -227,12 +235,12 @@ export function ManageBorrowing() {
             إدارة استعارة وإرجاع الكتب - Manage book borrowing and returns
           </p>
         </div>
-        <button 
-          onClick={handleNewBorrowing} 
-          className="neomorph-button px-6 py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-green-500 to-blue-500 hover:scale-105 transition-transform flex items-center space-x-2"
+        <button
+          onClick={handleNewBorrowing}
+          className="btn-primary flex items-center space-x-2 group"
         >
-          <Plus className="h-5 w-5" />
-          <span>استعارة جديدة - New Borrowing</span>
+          <Plus className="h-5 w-5 transition-transform group-hover:rotate-90" />
+          <span>New Borrowing</span>
         </button>
       </motion.div>
 

@@ -8,8 +8,8 @@ import { useSupabaseApp } from '../context/SupabaseContext';
 import { BookOpen, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 const loginSchema = z.object({
-  email: z.string().email('البريد الإلكتروني غير صحيح - Invalid email address'),
-  password: z.string().min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل - Password must be at least 6 characters'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -27,44 +27,71 @@ export function Login() {
 
   // Redirect if already logged in
   useEffect(() => {
+    console.log('🔍 [LOGIN] useEffect triggered - checking auth state:', {
+      hasUser: !!state.user,
+      hasProfile: !!state.profile,
+      userEmail: state.user?.email,
+      userRole: state.profile?.role,
+      isLoading: state.isLoading,
+      componentLoading: isLoading
+    });
+
+    // Don't redirect while loading to avoid race conditions
+    if (state.isLoading || isLoading) {
+      console.log('⏳ [LOGIN] Still loading, skipping redirect check');
+      return;
+    }
+
     if (state.user && state.profile) {
-      const from = (location.state as any)?.from?.pathname || '/';
+      const from = (location.state as { from?: { pathname: string } })?.from?.pathname;
       const redirectPath = state.profile.role === 'admin' ? '/admin' :
                           state.profile.role === 'teacher' ? '/teacher' : '/student';
-      navigate(from !== '/login' ? from : redirectPath, { replace: true });
+
+      console.log('🚀 [LOGIN] Redirecting authenticated user:', {
+        from,
+        redirectPath,
+        userRole: state.profile.role
+      });
+
+      // If user came from a protected route, redirect there
+      // Otherwise, redirect to role-based dashboard
+      // Don't redirect to homepage (/) as it's not a protected route
+      const targetPath = (from && from !== '/login' && from !== '/') ? from : redirectPath;
+
+      console.log('🎯 [LOGIN] Final redirect target:', targetPath);
+      navigate(targetPath, { replace: true });
     }
-  }, [state.user, state.profile, navigate, location]);
+  }, [state.user, state.profile, state.isLoading, isLoading, navigate, location]);
+
+  // Sync component loading state with context loading state
+  useEffect(() => {
+    if (!state.isLoading && isLoading) {
+      console.log('🔄 [LOGIN] Context loading finished, updating component loading state');
+      setIsLoading(false);
+    }
+  }, [state.isLoading, isLoading]);
 
   const onSubmit = async (data: LoginFormData) => {
+    console.log('📝 [LOGIN] Form submitted:', { email: data.email, timestamp: new Date().toISOString() });
     setIsLoading(true);
+
     try {
+      console.log('🔐 [LOGIN] Calling signIn function...');
       await signIn(data.email, data.password);
+      console.log('✅ [LOGIN] SignIn completed successfully - navigation will be handled by useEffect');
       // Navigation will be handled by the useEffect above
+      // Don't set loading to false immediately - let the context handle it
     } catch (error) {
-      console.error('Login error:', error);
-    } finally {
+      console.error('❌ [LOGIN] Login error caught in component:', error);
+      // Error is already set in the context by signIn function
+      // Only set loading to false on error
       setIsLoading(false);
     }
+    // Note: We don't set loading to false on success to avoid race conditions
+    // The useEffect will handle navigation when auth state is properly set
   };
 
-  // Demo login function for testing
-  const handleDemoLogin = async (role: 'admin' | 'teacher' | 'student') => {
-    const demoCredentials = {
-      admin: { email: 'admin@idarah.com', password: 'admin123' },
-      teacher: { email: 'teacher@idarah.com', password: 'teacher123' },
-      student: { email: 'student@idarah.com', password: 'student123' }
-    };
 
-    const credentials = demoCredentials[role];
-    setIsLoading(true);
-    try {
-      await signIn(credentials.email, credentials.password);
-    } catch (error) {
-      console.error('Demo login error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -95,7 +122,7 @@ export function Login() {
             {/* Email Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                البريد الإلكتروني - Email Address
+                Email Address
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -118,7 +145,7 @@ export function Login() {
             {/* Password Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                كلمة المرور - Password
+                Password
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -169,39 +196,26 @@ export function Login() {
                   <AlertCircle className="h-4 w-4 mr-2" />
                   {state.error}
                 </p>
+                <p className="text-red-600 dark:text-red-300 text-xs mt-2">
+                  إذا استمرت المشكلة، يرجى المحاولة مرة أخرى أو الاتصال بالدعم الفني
+                  <br />
+                  If the problem persists, please try again or contact technical support
+                </p>
+              </div>
+            )}
+
+            {/* Loading State Display */}
+            {(state.isLoading || isLoading) && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <div className="text-blue-800 dark:text-blue-200 text-sm flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                  جاري المعالجة... - Processing authentication...
+                </div>
               </div>
             )}
           </form>
 
-          {/* Demo Login Section */}
-          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
-              تسجيل دخول تجريبي - Demo Login
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={() => handleDemoLogin('admin')}
-                disabled={isLoading}
-                className="text-xs py-2 px-3 bg-red-100 text-red-800 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50"
-              >
-                مدير - Admin
-              </button>
-              <button
-                onClick={() => handleDemoLogin('teacher')}
-                disabled={isLoading}
-                className="text-xs py-2 px-3 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors disabled:opacity-50"
-              >
-                أستاذ - Teacher
-              </button>
-              <button
-                onClick={() => handleDemoLogin('student')}
-                disabled={isLoading}
-                className="text-xs py-2 px-3 bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50"
-              >
-                طالب - Student
-              </button>
-            </div>
-          </div>
+
 
           <div className="text-center mt-6">
             <p className="text-sm text-gray-500 dark:text-gray-400">

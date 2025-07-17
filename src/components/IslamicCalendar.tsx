@@ -1,10 +1,8 @@
 import React from 'react';
 import { Calendar, Clock } from 'lucide-react';
-import { useSupabaseApp } from '../context/SupabaseContext';
 import { getIslamicDate, getPrayerTimes } from '../utils/islamicCalendar';
 
 export function IslamicCalendar() {
-  const { state } = useSupabaseApp();
   const [islamicDate, setIslamicDate] = React.useState(getIslamicDate());
   const [prayerTimes, setPrayerTimes] = React.useState(getPrayerTimes());
 

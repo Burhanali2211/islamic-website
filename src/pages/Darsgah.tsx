@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { School, Book, Users, Star, GraduationCap } from 'lucide-react';
-import { useSupabaseApp } from '../context/SupabaseContext';
+import { School, Book, Star } from 'lucide-react';
 
 const courses = [
   { title: 'Quranic Tafsir', instructor: 'Dr. Yusuf Ahmed', duration: '12 Weeks', level: 'Intermediate', icon: Book },
@@ -16,7 +15,6 @@ const faculty = [
 ];
 
 export function Darsgah() {
-  const { state } = useSupabaseApp();
 
   const testimonials = [
     { name: 'Ahmed Hassan', quote: t('testimonials.student1.quote'), image: 'https://i.pravatar.cc/150?u=student1' },

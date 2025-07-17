@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Book, BookOpen, Users, Clock, FileText, User, Star, Scroll, Filter, SlidersHorizontal, Calendar, Languages } from 'lucide-react';
+import { Book, BookOpen, Users, Clock, User, Star, Scroll, Filter, SlidersHorizontal, Calendar, Languages } from 'lucide-react';
 import { useSupabaseApp } from '../context/SupabaseContext';
 import { BookCategory } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';

@@ -1,8 +1,6 @@
 import React from 'react';
-import { useSupabaseApp } from '../../context/SupabaseContext';
 
 export function AnimatedBackground() {
-  const { state } = useSupabaseApp();
 
   return (
     <div className="fixed inset-0 -z-10">

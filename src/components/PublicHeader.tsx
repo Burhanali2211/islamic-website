@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { BookOpen, Sun, Moon, Menu, X } from 'lucide-react';
+import { Sun, Moon, Menu, X } from 'lucide-react';
 import { useSupabaseApp } from '../context/SupabaseContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -9,12 +9,12 @@ export function PublicHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navLinks = [
-    { path: '/', label: 'Bayt' },
-    { path: '/library', label: 'Maktabah' },
-    { path: '/about', label: 'Haqiqat' },
-    { path: '/foundation', label: 'Idarah' },
-    { path: '/learning-center', label: 'Darsgah' },
-    { path: '/contact', label: 'Rabita' },
+    { path: '/', label: 'Home' },
+    { path: '/library', label: 'Library' },
+    { path: '/about', label: 'About' },
+    { path: '/foundation', label: 'Foundation' },
+    { path: '/learning-center', label: 'Learning Center' },
+    { path: '/contact', label: 'Contact' },
   ];
 
   const toggleTheme = () => {
@@ -124,7 +124,7 @@ export function PublicHeader() {
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700 mt-2">
                 <Link to="/login" onClick={() => setIsMenuOpen(false)} className="block">
                   <button className="w-full py-3.5 rounded-xl font-semibold text-base text-white bg-gradient-to-r from-green-500 to-green-600 hover:scale-[1.02] transition-all duration-300 shadow-lg hover:shadow-green-500/25 touch-manipulation min-h-[48px]">
-                    Dakhil
+                    Login
                   </button>
                 </Link>
               </div>

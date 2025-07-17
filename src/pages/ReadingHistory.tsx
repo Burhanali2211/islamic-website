@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Clock, BookOpen, Calendar, Star, Filter, Search } from 'lucide-react';
+import { Clock, BookOpen, Calendar, Star, Search } from 'lucide-react';
 import { useSupabaseApp } from '../context/SupabaseContext';
 
 export function ReadingHistory() {

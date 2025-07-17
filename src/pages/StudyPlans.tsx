@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, BookOpen, Target, Plus, Play } from 'lucide-react';
+import { Clock, BookOpen, Plus, Play } from 'lucide-react';
 
 export function StudyPlans() {
   const studyPlans = [

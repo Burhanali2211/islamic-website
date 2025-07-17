@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseAdmin } from '../lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 
 export interface IslamicProfile {
@@ -37,7 +37,9 @@ export interface AuthResponse {
 class AuthService {
   // Sign up new user (Tasjeel - تسجيل)
   async signUp(email: string, password: string, userData: Partial<IslamicProfile>): Promise<AuthResponse> {
+    console.log('🔐 [AUTH_SERVICE] Starting signUp process...', { email, role: userData.role });
     try {
+      console.log('📧 [AUTH_SERVICE] Attempting Supabase auth.signUp...');
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -51,41 +53,103 @@ class AuthService {
       });
 
       if (error) {
+        console.error('❌ [AUTH_SERVICE] Supabase auth.signUp error:', error);
         return { user: null, profile: null, session: null, error: error.message };
       }
 
-      if (data.user) {
-        // Create profile in profiles table
-        const profileData: Partial<IslamicProfile> = {
-          id: data.user.id,
-          email: data.user.email!,
-          full_name: userData.full_name,
-          name_arabic: userData.name_arabic,
-          role: userData.role || 'student',
-          guardian_name: userData.guardian_name,
-          guardian_phone: userData.guardian_phone,
-          class_level: userData.class_level,
-          preferred_language: userData.preferred_language || 'en',
-          is_active: true,
-          max_borrow_limit: userData.role === 'teacher' ? 10 : 3,
-          enrollment_date: new Date().toISOString().split('T')[0]
-        };
+      console.log('✅ [AUTH_SERVICE] Supabase auth.signUp successful:', {
+        userId: data.user?.id,
+        email: data.user?.email,
+        hasSession: !!data.session
+      });
 
-        const { data: profile, error: profileError } = await supabase
+      if (data.user) {
+        // Wait a moment for the database trigger to create the profile
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Check if profile was created by trigger, if not create it manually
+        console.log('👤 [AUTH_SERVICE] Checking if profile exists...');
+        const { data: existingProfile, error: checkError } = await supabaseAdmin
           .from('profiles')
-          .insert(profileData)
-          .select()
+          .select('*')
+          .eq('id', data.user.id)
           .single();
 
-        if (profileError) {
-          return { user: data.user, profile: null, session: data.session, error: profileError.message };
+        if (checkError && checkError.code !== 'PGRST116') {
+          console.error('❌ [AUTH_SERVICE] Error checking profile:', checkError);
+          return { user: data.user, profile: null, session: data.session, error: checkError.message };
+        }
+
+        let profile = existingProfile;
+
+        if (!existingProfile) {
+          // Profile doesn't exist, create it manually
+          const profileData: Partial<IslamicProfile> = {
+            id: data.user.id,
+            email: data.user.email!,
+            full_name: userData.full_name,
+            name_arabic: userData.name_arabic,
+            role: userData.role || 'student',
+            guardian_name: userData.guardian_name,
+            guardian_phone: userData.guardian_phone,
+            class_level: userData.class_level,
+            preferred_language: userData.preferred_language || 'en',
+            is_active: true,
+            max_borrow_limit: userData.role === 'teacher' ? 10 : 3,
+            enrollment_date: new Date().toISOString().split('T')[0]
+          };
+
+          console.log('👤 [AUTH_SERVICE] Creating profile manually...', { userId: data.user.id });
+          const { data: newProfile, error: profileError } = await supabaseAdmin
+            .from('profiles')
+            .insert(profileData)
+            .select()
+            .single();
+
+          if (profileError) {
+            console.error('❌ [AUTH_SERVICE] Profile creation error:', profileError);
+            return { user: data.user, profile: null, session: data.session, error: profileError.message };
+          }
+
+          profile = newProfile;
+          console.log('✅ [AUTH_SERVICE] Profile created manually:', { profileId: profile?.id });
+        } else {
+          // Profile exists (created by trigger), update it with additional data
+          const updateData: Partial<IslamicProfile> = {
+            full_name: userData.full_name || existingProfile.full_name,
+            name_arabic: userData.name_arabic,
+            guardian_name: userData.guardian_name,
+            guardian_phone: userData.guardian_phone,
+            class_level: userData.class_level,
+            preferred_language: userData.preferred_language || 'en',
+            max_borrow_limit: userData.role === 'teacher' ? 10 : userData.role === 'admin' ? 50 : 3,
+          };
+
+          console.log('👤 [AUTH_SERVICE] Updating existing profile...', { userId: data.user.id });
+          const { data: updatedProfile, error: updateError } = await supabaseAdmin
+            .from('profiles')
+            .update(updateData)
+            .eq('id', data.user.id)
+            .select()
+            .single();
+
+          if (updateError) {
+            console.error('❌ [AUTH_SERVICE] Profile update error:', updateError);
+            // Still return success since profile exists
+            profile = existingProfile;
+          } else {
+            profile = updatedProfile;
+            console.log('✅ [AUTH_SERVICE] Profile updated successfully:', { profileId: profile?.id });
+          }
         }
 
         return { user: data.user, profile, session: data.session, error: null };
       }
 
+      console.error('❌ [AUTH_SERVICE] No user returned from signUp');
       return { user: null, profile: null, session: null, error: 'Registration failed' };
     } catch (error) {
+      console.error('💥 [AUTH_SERVICE] SignUp error caught:', error);
       return { user: null, profile: null, session: null, error: (error as Error).message };
     }
   }
@@ -123,9 +187,25 @@ class AuthService {
     }
   }
 
-  // Get current user profile
+  // Get current user profile with enhanced error handling
   async getProfile(userId: string): Promise<IslamicProfile | null> {
     try {
+      console.log('🔍 [AUTH] Fetching profile for user:', userId);
+
+      // First check if user exists in auth.users
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+      if (userError) {
+        console.error('❌ [AUTH] Error getting current user:', userError);
+        return null;
+      }
+
+      if (!user || user.id !== userId) {
+        console.error('❌ [AUTH] User mismatch or not authenticated');
+        return null;
+      }
+
+      // Try to get profile from profiles table
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -133,13 +213,93 @@ class AuthService {
         .single();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.error('❌ [AUTH] Error fetching profile from database:', error);
+
+        // If profile doesn't exist, create it from auth metadata
+        if (error.code === 'PGRST116') { // No rows returned
+          console.log('🔧 [AUTH] Profile not found, creating from auth metadata...');
+          return await this.createProfileFromAuth(user);
+        }
+
         return null;
       }
 
+      console.log('✅ [AUTH] Profile fetched successfully:', { id: data.id, role: data.role });
       return data;
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('❌ [AUTH] Error in getProfile:', error);
+      return null;
+    }
+  }
+
+  // Create profile from auth user metadata
+  private async createProfileFromAuth(user: any): Promise<IslamicProfile | null> {
+    try {
+      const metadata = user.user_metadata || {};
+      const appMetadata = user.app_metadata || {};
+
+      // First check if profile already exists
+      const { data: existingProfile, error: checkError } = await supabaseAdmin
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('❌ [AUTH] Error checking existing profile:', checkError);
+        return null;
+      }
+
+      if (existingProfile) {
+        console.log('✅ [AUTH] Profile already exists:', existingProfile);
+        return existingProfile;
+      }
+
+      const profileData: Partial<IslamicProfile> = {
+        id: user.id,
+        email: user.email,
+        full_name: metadata.full_name || user.email?.split('@')[0] || 'User',
+        name_arabic: metadata.name_arabic,
+        role: metadata.role || appMetadata.role || 'student',
+        is_active: true,
+        preferred_language: metadata.preferred_language || 'en',
+        max_borrow_limit: metadata.role === 'admin' ? 50 : metadata.role === 'teacher' ? 10 : 3,
+        enrollment_date: new Date().toISOString().split('T')[0]
+      };
+
+      const { data, error } = await supabaseAdmin
+        .from('profiles')
+        .insert(profileData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ [AUTH] Error creating profile:', error);
+
+        // If it's a duplicate key error, try to fetch the existing profile
+        if (error.code === '23505') {
+          console.log('🔄 [AUTH] Duplicate key error, fetching existing profile...');
+          const { data: retryProfile, error: retryError } = await supabaseAdmin
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          if (retryError) {
+            console.error('❌ [AUTH] Error fetching existing profile after duplicate:', retryError);
+            return null;
+          }
+
+          return retryProfile;
+        }
+
+        return null;
+      }
+
+      console.log('✅ [AUTH] Profile created successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ [AUTH] Error in createProfileFromAuth:', error);
       return null;
     }
   }
@@ -245,26 +405,26 @@ class AuthService {
   // Get user's Islamic greeting based on time
   getIslamicGreeting(profile: IslamicProfile | null): string {
     const hour = new Date().getHours();
-    const name = profile?.full_name || profile?.name_arabic || 'أخي الكريم';
-    
+    const name = profile?.full_name || 'Dear Student';
+
     if (hour < 12) {
-      return `صباح الخير، ${name}`;
+      return `Good morning, ${name}`;
     } else if (hour < 18) {
-      return `مساء الخير، ${name}`;
+      return `Good afternoon, ${name}`;
     } else {
-      return `مساء الخير، ${name}`;
+      return `Good evening, ${name}`;
     }
   }
 
-  // Get role display name in Arabic
-  getRoleDisplayName(role: string, language: 'ar' | 'en' = 'en'): string {
+  // Get role display name
+  getRoleDisplayName(role: string): string {
     const roleNames = {
-      admin: { ar: 'مدير', en: 'Administrator' },
-      teacher: { ar: 'أستاذ', en: 'Teacher' },
-      student: { ar: 'طالب', en: 'Student' }
+      admin: 'Administrator',
+      teacher: 'Teacher',
+      student: 'Student'
     };
 
-    return roleNames[role as keyof typeof roleNames]?.[language] || role;
+    return roleNames[role as keyof typeof roleNames] || role;
   }
 }
 

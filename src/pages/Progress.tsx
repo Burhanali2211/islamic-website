@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Target, Award, Calendar, BookOpen, Clock } from 'lucide-react';
+import { TrendingUp, Award, Calendar, BookOpen, Clock } from 'lucide-react';
 import { CircularProgressBar } from '../components/CircularProgressBar';
 
 export function Progress() {

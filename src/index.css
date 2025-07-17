@@ -39,13 +39,23 @@ html {
 /* Enhanced Islamic Glass Morphism Styles */
 @layer utilities {
   .glass-card {
-    @apply backdrop-blur-2xl bg-white/70 dark:bg-gray-900/70 border border-white/30 dark:border-gray-700/40 shadow-2xl shadow-green-500/5 dark:shadow-green-400/5;
+    @apply backdrop-blur-2xl bg-white/70 dark:bg-gray-900/70 border border-white/30 dark:border-gray-700/40 shadow-2xl;
     background-image: radial-gradient(circle at 20% 80%, rgba(34, 197, 94, 0.05) 0%, transparent 50%),
                       radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+    box-shadow: 0 25px 50px -12px rgba(34, 197, 94, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.3);
   }
 
   .glass-input {
-    @apply backdrop-blur-lg bg-white/60 dark:bg-gray-950/60 border border-white/30 dark:border-gray-700/40 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 shadow-lg shadow-green-500/5;
+    @apply backdrop-blur-lg bg-white/60 dark:bg-gray-950/60 border border-white/30 dark:border-gray-700/40 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 shadow-lg transition-all duration-300;
+    box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.05), 0 4px 6px -2px rgba(34, 197, 94, 0.05);
+  }
+
+  .glass-input:focus {
+    @apply ring-2 ring-emerald-500/50 border-emerald-500/50 shadow-xl transform scale-[1.02];
+  }
+
+  .glass-input:hover {
+    @apply border-emerald-400/40 shadow-lg;
   }
 
   .glass-header {
@@ -61,6 +71,49 @@ html {
   .glass-footer {
     @apply backdrop-blur-xl bg-white/85 dark:bg-gray-950/85 border-t border-white/20 dark:border-gray-700/50;
     background-image: linear-gradient(135deg, rgba(34, 197, 94, 0.02) 0%, rgba(59, 130, 246, 0.02) 100%);
+  }
+}
+
+/* Enhanced Interactive Elements */
+@layer utilities {
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-emerald-500 to-blue-500 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 focus:ring-2 focus:ring-emerald-500/50 focus:outline-none;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-xl border border-gray-300 dark:border-gray-600 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 focus:ring-2 focus:ring-gray-500/50 focus:outline-none;
+  }
+
+  .btn-danger {
+    @apply px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 focus:ring-2 focus:ring-red-500/50 focus:outline-none;
+  }
+
+  .btn-success {
+    @apply px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 focus:ring-2 focus:ring-green-500/50 focus:outline-none;
+  }
+
+  .btn-icon {
+    @apply p-3 rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 focus:ring-2 focus:ring-emerald-500/50 focus:outline-none touch-manipulation;
+  }
+
+  .input-enhanced {
+    @apply w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white transition-all duration-300 hover:border-emerald-400 focus:shadow-lg;
+  }
+
+  .select-enhanced {
+    @apply w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white transition-all duration-300 hover:border-emerald-400 cursor-pointer;
+  }
+
+  .checkbox-enhanced {
+    @apply rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 focus:ring-2 transition-all duration-200 transform hover:scale-110;
+  }
+
+  .card-interactive {
+    @apply transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl cursor-pointer;
+  }
+
+  .loading-spinner {
+    @apply animate-spin rounded-full border-2 border-gray-300 border-t-emerald-500;
   }
 }
 
