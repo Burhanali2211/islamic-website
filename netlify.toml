@@ -4,6 +4,7 @@
   base = "/"
   ignore = "false"  # Never skip build
   force = "true"    # Force build even if no changes detected
+  # Last deployment: 2025-07-17 - Fresh build forced
 
 [build.environment]
   NODE_VERSION = "18"
