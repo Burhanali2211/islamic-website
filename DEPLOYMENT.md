@@ -21,12 +21,14 @@
 - **Node version**: `18`
 
 #### 3. Environment Variables
-In Netlify dashboard, go to Site settings > Environment variables and add:
+Environment variables are now configured in netlify.toml:
 
 ```
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_SUPABASE_URL=https://bxyzvaujvhumupwdmysh.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4eXp2YXVqdmh1bXVwd2RteXNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI3MTI3OTgsImV4cCI6MjA2ODI4ODc5OH0.qSJ3Dqr-jza_mEJu0byxChZO8AVTHV3yUrW8zbrjOO4
 ```
+
+**Note**: No manual configuration needed in Netlify dashboard - variables are automatically loaded from netlify.toml
 
 #### 4. Deploy
 Click "Deploy site" - Netlify will automatically build and deploy your site.
