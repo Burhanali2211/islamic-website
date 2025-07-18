@@ -9,9 +9,30 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preload" href="/src/index.css" as="style">
+    <style>
+      /* Prevent FOUC */
+      body { visibility: hidden; }
+      body.loaded { visibility: visible; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Prevent FOUC by showing body after styles are loaded
+      window.addEventListener('load', function() {
+        document.body.classList.add('loaded');
+      });
+
+      // Clear any cached module imports on page load
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+          }
+        });
+      }
+    </script>
   </body>
 </html>

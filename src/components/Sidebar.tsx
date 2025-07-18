@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
   GraduationCap,
@@ -26,6 +26,7 @@ interface SidebarProps {
 export function Sidebar({ onClose }: SidebarProps) {
   const { state } = useSupabaseApp();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const studentNav = [
     { icon: GraduationCap, label: 'Student Dashboard', path: '/student' },
@@ -75,7 +76,9 @@ export function Sidebar({ onClose }: SidebarProps) {
           key={item.path}
           to={item.path}
           onClick={(e) => {
-            console.log('🔗 [SIDEBAR] Link clicked:', item.path, 'Event:', e);
+            // Prevent default and use programmatic navigation for more reliable navigation
+            e.preventDefault();
+            navigate(item.path);
             handleLinkClick(item.path);
           }}
           className={`flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200 group touch-manipulation ${
@@ -92,16 +95,13 @@ export function Sidebar({ onClose }: SidebarProps) {
   };
 
   const handleLinkClick = (path: string) => {
-    console.log('🔗 [SIDEBAR] Navigation clicked:', path);
-    console.log('🔗 [SIDEBAR] Current location:', location.pathname);
-    console.log('🔗 [SIDEBAR] User role:', state.profile?.role);
     if (onClose) {
       onClose();
     }
   };
 
   return (
-    <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-screen flex flex-col shadow-lg">
+    <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-screen flex flex-col shadow-lg pointer-events-auto">
       <div className="p-3 sm:p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
         {/* Header with close button for mobile */}
         <div className="flex items-center justify-between mb-4 sm:mb-6">

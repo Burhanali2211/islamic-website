@@ -6,8 +6,12 @@ export default defineConfig({
   plugins: [react()],
 
   optimizeDeps: {
-    exclude: ['lucide-react'],
-    include: ['react', 'react-dom', 'framer-motion'],
+    include: ['react', 'react-dom', 'framer-motion', 'lucide-react'],
+    force: true,
+  },
+
+  define: {
+    __CACHE_BUST__: JSON.stringify(Date.now()),
   },
 
   build: {
@@ -37,6 +41,11 @@ export default defineConfig({
   server: {
     hmr: {
       overlay: false,
+    },
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
     },
   },
 

@@ -248,11 +248,17 @@ export function AdminProfile() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
             <div className="p-6 text-center border-b border-gray-200 dark:border-gray-700">
               <div className="relative inline-block mb-4">
-                <img
-                  src={userProfile.avatar_url || '/default-avatar.png'}
-                  alt={userProfile.full_name || 'Admin User'}
-                  className="w-24 h-24 rounded-full object-cover mx-auto border-4 border-white dark:border-gray-800"
-                />
+                {userProfile.avatar_url ? (
+                  <img
+                    src={userProfile.avatar_url}
+                    alt={userProfile.full_name || 'Admin User'}
+                    className="w-24 h-24 rounded-full object-cover mx-auto border-4 border-white dark:border-gray-800"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-white font-bold text-2xl mx-auto border-4 border-white dark:border-gray-800">
+                    {(userProfile.full_name || 'A').charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <button className="absolute bottom-0 right-0 bg-blue-600 p-2 rounded-full text-white hover:bg-blue-700">
                   <Camera className="h-4 w-4" />
                 </button>

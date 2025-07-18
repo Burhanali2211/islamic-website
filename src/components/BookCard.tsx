@@ -92,12 +92,21 @@ export function BookCard({ book }: BookCardProps) {
           transition={{ duration: 0.6, ease: 'easeInOut' }}
           className="w-full h-full"
         >
-          <OptimizedImage
-            src={book.cover_image_url || '/placeholder-book.jpg'}
-            alt={book.title}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
+          {book.cover_image_url ? (
+            <OptimizedImage
+              src={book.cover_image_url}
+              alt={book.title}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-white">
+              <div className="text-center">
+                <BookOpen className="h-8 w-8 mx-auto mb-2" />
+                <span className="text-xs font-medium">Islamic Book</span>
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Gradient Overlay */}

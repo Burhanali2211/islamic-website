@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
@@ -41,7 +41,6 @@ import { OnlineUsers } from '../../components/realtime/OnlineUsers';
 import { useRealtimeDashboard } from '../../hooks/useRealTime';
 
 export function AdminDashboard() {
-  console.log('🔄 [ADMIN_DASHBOARD] Component rendering/re-rendering');
   const { state, loadDashboardStats, loadBooks, loadUsers, loadBorrowingRecords } = useSupabaseApp();
 
   // Real-time dashboard hook
@@ -51,6 +50,9 @@ export function AdminDashboard() {
     lastUpdate: realtimeLastUpdate,
     reconnectAll: reconnectRealtime
   } = useRealtimeDashboard();
+
+  // Prevent duplicate loading
+  const isLoadingRef = useRef(false);
 
   // Enhanced state management
   const [isLoading, setIsLoading] = useState(false);
@@ -63,8 +65,15 @@ export function AdminDashboard() {
   const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds
   const [showRealTimePanel, setShowRealTimePanel] = useState(true);
 
-  // Load all dashboard data
-  const loadAllData = async () => {
+  // Load all dashboard data with duplicate prevention - memoized to prevent infinite re-renders
+  const loadAllData = useCallback(async () => {
+    // Prevent duplicate loading
+    if (isLoadingRef.current) {
+      console.log('📊 [ADMIN_DASHBOARD] Load already in progress, skipping duplicate request');
+      return;
+    }
+
+    isLoadingRef.current = true;
     setIsLoading(true);
     try {
       await Promise.all([
@@ -80,13 +89,14 @@ export function AdminDashboard() {
       setNotification({ type: 'error', message: 'Failed to refresh dashboard data' });
     } finally {
       setIsLoading(false);
+      isLoadingRef.current = false; // Reset loading flag
     }
-  };
+  }, [loadDashboardStats, loadBooks, loadUsers, loadBorrowingRecords]);
 
   // Initial load
   useEffect(() => {
     loadAllData();
-  }, []);
+  }, [loadAllData]);
 
   // Auto-refresh functionality
   useEffect(() => {
@@ -97,7 +107,7 @@ export function AdminDashboard() {
     }, refreshInterval);
 
     return () => clearInterval(interval);
-  }, [autoRefresh, refreshInterval]);
+  }, [autoRefresh, refreshInterval, loadAllData]);
 
   // Auto-hide notification after 5 seconds
   useEffect(() => {
@@ -455,7 +465,7 @@ export function AdminDashboard() {
               <span>{isLoading ? 'Refreshing...' : 'Refresh'}</span>
             </button>
 
-            <div className="relative">
+            <div className="relative z-10">
               <NotificationSystem
                 position="top-right"
                 maxVisible={5}

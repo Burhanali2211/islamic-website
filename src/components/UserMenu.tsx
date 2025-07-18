@@ -26,7 +26,13 @@ export function UserMenu() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 neomorph-button p-2 rounded-full hover:scale-105 transition-transform"
       >
-        <img src={state.profile.avatar_url || '/default-avatar.png'} alt={state.profile.full_name || 'User'} className="w-8 h-8 rounded-full" />
+        {state.profile.avatar_url ? (
+          <img src={state.profile.avatar_url} alt={state.profile.full_name || 'User'} className="w-8 h-8 rounded-full" />
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-white font-semibold text-sm">
+            {(state.profile.full_name || 'U').charAt(0).toUpperCase()}
+          </div>
+        )}
         <span className="hidden md:block font-medium text-gray-700 dark:text-gray-300 pr-2">{state.profile.full_name || 'User'}</span>
       </button>
 

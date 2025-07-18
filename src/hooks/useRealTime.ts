@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { useSupabaseApp } from '../context/SupabaseContext';
@@ -22,6 +22,9 @@ export interface RealtimeState {
   connectionCount: number;
 }
 
+// Global subscription tracking to prevent duplicates
+const globalSubscriptions = new Map<string, RealtimeChannel>();
+
 // Hook for subscribing to real-time table changes
 export function useRealtimeTable<T = any>(
   options: RealtimeOptions,
@@ -39,106 +42,178 @@ export function useRealtimeTable<T = any>(
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
+  const isConnectingRef = useRef(false);
+  const subscriptionKeyRef = useRef<string | null>(null);
+
+  // Memoize stable options to prevent unnecessary reconnections
+  const stableOptions = useMemo(() => ({
+    table: options.table,
+    event: options.event || '*',
+    schema: options.schema || 'public',
+    filter: options.filter,
+    autoReconnect: options.autoReconnect ?? true
+  }), [options.table, options.event, options.schema, options.filter, options.autoReconnect]);
+
+  // Stable callback ref to prevent reconnections on callback changes
+  const callbackRef = useRef(callback);
+  callbackRef.current = callback;
+
+  // Stable event handlers
+  const onConnectRef = useRef(options.onConnect);
+  const onDisconnectRef = useRef(options.onDisconnect);
+  const onErrorRef = useRef(options.onError);
+  onConnectRef.current = options.onConnect;
+  onDisconnectRef.current = options.onDisconnect;
+  onErrorRef.current = options.onError;
 
   const connect = useCallback(() => {
+    // Prevent multiple simultaneous connection attempts
+    if (isConnectingRef.current) {
+      console.log('🔄 [REALTIME] Connection already in progress, skipping');
+      return;
+    }
+
+    // Create unique subscription key
+    const subscriptionKey = `${stableOptions.table}_${stableOptions.event}_${stableOptions.filter || 'all'}`;
+    subscriptionKeyRef.current = subscriptionKey;
+
+    // Check if subscription already exists globally
+    if (globalSubscriptions.has(subscriptionKey)) {
+      console.log('🔄 [REALTIME] Reusing existing subscription for:', subscriptionKey);
+      const existingChannel = globalSubscriptions.get(subscriptionKey)!;
+      channelRef.current = existingChannel;
+      setState(prev => ({ ...prev, isConnected: true, isConnecting: false }));
+      return;
+    }
+
+    isConnectingRef.current = true;
+
+    // Clean up existing channel
     if (channelRef.current) {
-      channelRef.current.unsubscribe();
+      try {
+        channelRef.current.unsubscribe();
+        if (subscriptionKeyRef.current) {
+          globalSubscriptions.delete(subscriptionKeyRef.current);
+        }
+      } catch (error) {
+        console.warn('Error unsubscribing from channel:', error);
+      }
+      channelRef.current = null;
     }
 
     setState(prev => ({ ...prev, isConnecting: true, error: null }));
 
-    const channelName = `${options.table}_${Date.now()}`;
+    const channelName = `${stableOptions.table}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const channel = supabase.channel(channelName);
+
+    // Store in global subscriptions
+    globalSubscriptions.set(subscriptionKey, channel);
 
     channel
       .on(
         'postgres_changes',
         {
-          event: options.event || '*',
-          schema: options.schema || 'public',
-          table: options.table,
-          filter: options.filter
+          event: stableOptions.event,
+          schema: stableOptions.schema,
+          table: stableOptions.table,
+          filter: stableOptions.filter
         },
         (payload) => {
-          setState(prev => ({ 
-            ...prev, 
+          setState(prev => ({
+            ...prev,
             lastUpdate: new Date(),
             connectionCount: prev.connectionCount + 1
           }));
-          callback(payload);
+          callbackRef.current(payload);
         }
       )
       .subscribe((status) => {
-        console.log(`📡 [REALTIME] ${options.table} subscription status:`, status);
-        
+        // Reduce console spam - only log important status changes
+        if (status === 'SUBSCRIBED' || status === 'CHANNEL_ERROR') {
+          console.log(`📡 [REALTIME] ${stableOptions.table} subscription status:`, status);
+        }
+
         if (status === 'SUBSCRIBED') {
-          setState(prev => ({ 
-            ...prev, 
-            isConnected: true, 
-            isConnecting: false, 
-            error: null 
+          setState(prev => ({
+            ...prev,
+            isConnected: true,
+            isConnecting: false,
+            error: null
           }));
           reconnectAttempts.current = 0;
-          options.onConnect?.();
+          isConnectingRef.current = false;
+          onConnectRef.current?.();
         } else if (status === 'CHANNEL_ERROR') {
-          setState(prev => ({ 
-            ...prev, 
-            isConnected: false, 
-            isConnecting: false, 
-            error: 'Connection failed' 
+          setState(prev => ({
+            ...prev,
+            isConnected: false,
+            isConnecting: false,
+            error: 'Connection failed'
           }));
-          options.onError?.('Connection failed');
-          
-          // Auto-reconnect logic
-          if (options.autoReconnect && reconnectAttempts.current < maxReconnectAttempts) {
+          isConnectingRef.current = false;
+          onErrorRef.current?.('Connection failed');
+
+          // Auto-reconnect logic with exponential backoff
+          if (stableOptions.autoReconnect && reconnectAttempts.current < maxReconnectAttempts) {
             reconnectAttempts.current++;
             const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
-            
+
             reconnectTimeoutRef.current = setTimeout(() => {
-              console.log(`🔄 [REALTIME] Reconnecting to ${options.table} (attempt ${reconnectAttempts.current})`);
+              console.log(`🔄 [REALTIME] Reconnecting to ${stableOptions.table} (attempt ${reconnectAttempts.current})`);
               connect();
             }, delay);
           }
         } else if (status === 'CLOSED') {
-          setState(prev => ({ 
-            ...prev, 
-            isConnected: false, 
-            isConnecting: false 
+          setState(prev => ({
+            ...prev,
+            isConnected: false,
+            isConnecting: false
           }));
-          options.onDisconnect?.();
+          isConnectingRef.current = false;
+          onDisconnectRef.current?.();
         }
       });
 
     channelRef.current = channel;
-  }, [options, callback]);
+  }, [stableOptions]);
 
   const disconnect = useCallback(() => {
+    isConnectingRef.current = false;
+
     if (channelRef.current) {
-      channelRef.current.unsubscribe();
+      try {
+        channelRef.current.unsubscribe();
+        // Remove from global subscriptions
+        if (subscriptionKeyRef.current) {
+          globalSubscriptions.delete(subscriptionKeyRef.current);
+        }
+      } catch (error) {
+        console.warn('Error unsubscribing from channel:', error);
+      }
       channelRef.current = null;
     }
-    
+
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
 
-    setState(prev => ({ 
-      ...prev, 
-      isConnected: false, 
-      isConnecting: false 
+    setState(prev => ({
+      ...prev,
+      isConnected: false,
+      isConnecting: false
     }));
   }, []);
 
   const reconnect = useCallback(() => {
     disconnect();
     setTimeout(connect, 1000);
-  }, [disconnect, connect]);
+  }, []);
 
   useEffect(() => {
     connect();
     return disconnect;
-  }, [connect, disconnect]);
+  }, [stableOptions.table, stableOptions.event, stableOptions.schema, stableOptions.filter, stableOptions.autoReconnect]);
 
   return {
     ...state,
@@ -155,14 +230,14 @@ export function useRealtimeNotifications() {
 
   const handleNotificationUpdate = useCallback((payload: any) => {
     const { eventType, new: newRecord, old: oldRecord } = payload;
-    
+
     switch (eventType) {
       case 'INSERT':
         setNotifications(prev => [newRecord, ...prev]);
         if (!newRecord.is_read) {
           setUnreadCount(prev => prev + 1);
         }
-        
+
         // Show browser notification if permission granted
         if (Notification.permission === 'granted') {
           new Notification(newRecord.title, {
@@ -172,22 +247,22 @@ export function useRealtimeNotifications() {
           });
         }
         break;
-        
+
       case 'UPDATE':
-        setNotifications(prev => 
-          prev.map(notif => 
+        setNotifications(prev =>
+          prev.map(notif =>
             notif.id === newRecord.id ? newRecord : notif
           )
         );
-        
+
         // Update unread count if read status changed
         if (oldRecord.is_read !== newRecord.is_read) {
           setUnreadCount(prev => newRecord.is_read ? prev - 1 : prev + 1);
         }
         break;
-        
+
       case 'DELETE':
-        setNotifications(prev => 
+        setNotifications(prev =>
           prev.filter(notif => notif.id !== oldRecord.id)
         );
         if (!oldRecord.is_read) {
@@ -197,12 +272,15 @@ export function useRealtimeNotifications() {
     }
   }, []);
 
+  // Memoize options to prevent unnecessary reconnections
+  const notificationOptions = useMemo(() => ({
+    table: 'notifications',
+    filter: state.user ? `user_id=eq.${state.user.id}` : undefined,
+    autoReconnect: true
+  }), [state.user?.id]);
+
   const realtimeState = useRealtimeTable(
-    {
-      table: 'notifications',
-      filter: state.user ? `user_id=eq.${state.user.id}` : undefined,
-      autoReconnect: true
-    },
+    notificationOptions,
     handleNotificationUpdate
   );
 
@@ -228,7 +306,7 @@ export function useRealtimeNotifications() {
 
   const markAllAsRead = useCallback(async () => {
     if (!state.user) return;
-    
+
     try {
       const { error } = await supabase
         .from('notifications')
@@ -272,39 +350,58 @@ export function useRealtimeNotifications() {
 export function useRealtimeDashboard() {
   const { loadDashboardStats, state } = useSupabaseApp();
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Stable reference to loadDashboardStats to prevent infinite re-renders
+  const loadStatsRef = useRef(loadDashboardStats);
+  loadStatsRef.current = loadDashboardStats;
 
   const handleDataChange = useCallback((payload: any) => {
     console.log('📊 [DASHBOARD] Data changed, refreshing stats:', payload.table);
     setLastUpdate(new Date());
-    
-    // Debounce the stats reload to avoid too many calls
-    setTimeout(() => {
-      loadDashboardStats();
-    }, 1000);
-  }, [loadDashboardStats]);
 
-  // Subscribe to tables that affect dashboard stats
+    // Clear existing timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    // Debounce the stats reload to avoid too many calls
+    debounceTimeoutRef.current = setTimeout(() => {
+      loadStatsRef.current();
+    }, 1000);
+  }, []); // Empty dependency array since we use refs
+
+  // Subscribe to tables that affect dashboard stats with unique keys
   const booksRealtime = useRealtimeTable(
-    { table: 'books', autoReconnect: true },
+    { table: 'books', autoReconnect: true, filter: 'dashboard_stats' },
     handleDataChange
   );
 
   const usersRealtime = useRealtimeTable(
-    { table: 'users', autoReconnect: true },
+    { table: 'users', autoReconnect: true, filter: 'dashboard_stats' },
     handleDataChange
   );
 
   const borrowingRealtime = useRealtimeTable(
-    { table: 'borrowing_records', autoReconnect: true },
+    { table: 'borrowing_records', autoReconnect: true, filter: 'dashboard_stats' },
     handleDataChange
   );
 
-  const isConnected = booksRealtime.isConnected && 
-                     usersRealtime.isConnected && 
+  // Cleanup debounce timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const isConnected = booksRealtime.isConnected &&
+                     usersRealtime.isConnected &&
                      borrowingRealtime.isConnected;
 
-  const hasError = booksRealtime.error || 
-                   usersRealtime.error || 
+  const hasError = booksRealtime.error ||
+                   usersRealtime.error ||
                    borrowingRealtime.error;
 
   return {
@@ -376,19 +473,19 @@ export function useRealtimeActivity() {
     }
   }, []);
 
-  // Subscribe to activity-generating tables
+  // Subscribe to activity-generating tables with unique filters
   useRealtimeTable(
-    { table: 'books', event: 'INSERT', autoReconnect: true },
+    { table: 'books', event: 'INSERT', autoReconnect: true, filter: 'activity_feed' },
     handleActivityUpdate
   );
 
   useRealtimeTable(
-    { table: 'users', event: 'INSERT', autoReconnect: true },
+    { table: 'users', event: 'INSERT', autoReconnect: true, filter: 'activity_feed' },
     handleActivityUpdate
   );
 
   useRealtimeTable(
-    { table: 'borrowing_records', autoReconnect: true },
+    { table: 'borrowing_records', autoReconnect: true, filter: 'activity_feed' },
     handleActivityUpdate
   );
 
@@ -408,7 +505,7 @@ export function useRealtimePresence(roomName: string = 'admin_dashboard') {
     if (!state.user) return;
 
     const channel = supabase.channel(roomName);
-    
+
     channel
       .on('presence', { event: 'sync' }, () => {
         const presenceState = channel.presenceState();
@@ -438,7 +535,7 @@ export function useRealtimePresence(roomName: string = 'admin_dashboard') {
     return () => {
       channel.unsubscribe();
     };
-  }, [state.user, state.profile, roomName]);
+  }, [state.user?.id, state.profile?.full_name, state.profile?.role, roomName]);
 
   return {
     onlineUsers,

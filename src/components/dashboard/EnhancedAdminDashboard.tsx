@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { 
   BookOpen, 
@@ -30,11 +30,21 @@ export function EnhancedAdminDashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedTab, setSelectedTab] = useState<'overview' | 'books' | 'users' | 'borrowing'>('overview');
 
+  // Prevent duplicate loading with ref
+  const isLoadingRef = useRef(false);
+
   // Draft management for new book form
   const { saveDraft, loadDraft, clearDraft } = useDraftManager('book');
 
-  // Load dashboard data with enhanced error handling
+  // Load dashboard data with enhanced error handling and duplicate prevention
   const loadDashboardData = async () => {
+    // Prevent duplicate loading
+    if (isLoadingRef.current) {
+      console.log('📊 [DASHBOARD] Load already in progress, skipping duplicate request');
+      return;
+    }
+
+    isLoadingRef.current = true;
     setIsLoading(true);
     setError(null);
 
@@ -83,36 +93,56 @@ export function EnhancedAdminDashboard() {
       
     } finally {
       setIsLoading(false);
+      isLoadingRef.current = false; // Reset loading flag
     }
   };
 
-  // Set up real-time subscriptions
+  // Set up real-time subscriptions with deduplication
   useEffect(() => {
     if (!state.user) return;
 
-    // Subscribe to books table changes
-    const unsubscribeBooks = dataManager.subscribeToTable(
-      'books',
-      (payload) => {
-        // Refresh books data
-        loadDashboardData();
-      }
-    );
+    let unsubscribeBooks: (() => void) | null = null;
+    let unsubscribeUsers: (() => void) | null = null;
 
-    // Subscribe to users table changes
-    const unsubscribeUsers = dataManager.subscribeToTable(
-      'profiles',
-      (payload) => {
-        // Refresh users data
-        loadDashboardData();
-      }
-    );
+    // Debounce data refresh to prevent excessive calls
+    let refreshTimeout: NodeJS.Timeout | null = null;
+    const debouncedRefresh = () => {
+      if (refreshTimeout) clearTimeout(refreshTimeout);
+      refreshTimeout = setTimeout(() => {
+        if (!isLoadingRef.current) {
+          loadDashboardData();
+        }
+      }, 1000);
+    };
+
+    try {
+      // Subscribe to books table changes
+      unsubscribeBooks = dataManager.subscribeToTable(
+        'books',
+        (payload) => {
+          console.log('📚 [REALTIME] Books table changed:', payload.eventType);
+          debouncedRefresh();
+        }
+      );
+
+      // Subscribe to users table changes
+      unsubscribeUsers = dataManager.subscribeToTable(
+        'profiles',
+        (payload) => {
+          console.log('👥 [REALTIME] Users table changed:', payload.eventType);
+          debouncedRefresh();
+        }
+      );
+    } catch (error) {
+      console.error('❌ [REALTIME] Failed to set up subscriptions:', error);
+    }
 
     return () => {
-      unsubscribeBooks();
-      unsubscribeUsers();
+      if (refreshTimeout) clearTimeout(refreshTimeout);
+      if (unsubscribeBooks) unsubscribeBooks();
+      if (unsubscribeUsers) unsubscribeUsers();
     };
-  }, [state.user]);
+  }, [state.user?.id]); // Only depend on user ID to prevent unnecessary re-subscriptions
 
   // Load data on component mount
   useEffect(() => {

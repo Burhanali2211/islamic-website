@@ -61,7 +61,7 @@ export function Login() {
       console.log('🎯 [LOGIN] Final redirect target:', targetPath);
       navigate(targetPath, { replace: true });
     }
-  }, [state.user, state.profile, state.isLoading, isLoading, navigate, location]);
+  }, [state.user?.id, state.profile?.role, state.isLoading, navigate, location.state?.from?.pathname]); // Fixed dependencies to prevent infinite loops
 
   // Sync component loading state with context loading state
   useEffect(() => {
@@ -69,7 +69,7 @@ export function Login() {
       console.log('🔄 [LOGIN] Context loading finished, updating component loading state');
       setIsLoading(false);
     }
-  }, [state.isLoading, isLoading]);
+  }, [state.isLoading]); // Removed isLoading from dependencies to prevent infinite loop
 
   const onSubmit = async (data: LoginFormData) => {
     console.log('📝 [LOGIN] Form submitted:', { email: data.email, timestamp: new Date().toISOString() });

@@ -169,12 +169,23 @@ const SupabaseAppContext = createContext<{
 function supabaseAppReducer(state: SupabaseAppState, action: SupabaseAppAction): SupabaseAppState {
   switch (action.type) {
     case 'SET_AUTH': {
+      // Prevent duplicate SET_AUTH dispatches for the same user
+      const isSameUser = state.user?.id === action.payload.user?.id;
+      const isSameProfile = state.profile?.id === action.payload.profile?.id &&
+                           state.profile?.role === action.payload.profile?.role;
+
+      if (isSameUser && isSameProfile && state.user && state.profile) {
+        console.log('🔄 [REDUCER] SET_AUTH skipped - same user and profile already set');
+        return state; // No change needed
+      }
+
       console.log('🔄 [REDUCER] SET_AUTH action received:', {
         hasUser: !!action.payload.user,
         hasProfile: !!action.payload.profile,
         userEmail: action.payload.user?.email,
         userRole: action.payload.profile?.role,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        isUpdate: isSameUser
       });
 
       const newAuthState = {
@@ -275,6 +286,7 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
   // Initialize authentication state
   useEffect(() => {
     console.log('🚀 [CONTEXT] Initializing authentication state...');
+    let isMounted = true;
 
     const initializeAuth = async () => {
       try {
@@ -283,24 +295,33 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
         // Check for real Supabase session
         const { user, session } = await authService.getCurrentSession();
 
+        // Only update state if component is still mounted
+        if (!isMounted) return;
+
         if (user) {
           console.log('👤 [CONTEXT] User found in session:', user.email);
           const profile = await authService.getProfile(user.id);
           console.log('📋 [CONTEXT] Profile loaded:', profile?.role);
 
-          dispatch({
-            type: 'SET_AUTH',
-            payload: { user, profile, session }
-          });
+          if (isMounted) {
+            dispatch({
+              type: 'SET_AUTH',
+              payload: { user, profile, session }
+            });
+          }
         } else {
           console.log('❌ [CONTEXT] No user found in session');
         }
       } catch (error) {
         console.error('💥 [CONTEXT] Error initializing auth:', error);
-        dispatch({ type: 'SET_ERROR', payload: 'Failed to initialize authentication' });
+        if (isMounted) {
+          dispatch({ type: 'SET_ERROR', payload: 'Failed to initialize authentication' });
+        }
       } finally {
         console.log('🔄 [CONTEXT] Setting initial loading to false');
-        dispatch({ type: 'SET_LOADING', payload: false });
+        if (isMounted) {
+          dispatch({ type: 'SET_LOADING', payload: false });
+        }
       }
     };
 
@@ -308,27 +329,35 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = authService.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+
       console.log('🔔 [CONTEXT] Auth state change event:', { event, hasSession: !!session, userEmail: session?.user?.email });
 
       if (event === 'SIGNED_IN' && session?.user) {
         console.log('👤 [CONTEXT] User signed in, fetching profile...');
         const profile = await authService.getProfile(session.user.id);
-        dispatch({
-          type: 'SET_AUTH',
-          payload: { user: session.user, profile, session }
-        });
+        if (isMounted) {
+          dispatch({
+            type: 'SET_AUTH',
+            payload: { user: session.user, profile, session }
+          });
+        }
       } else if (event === 'SIGNED_OUT') {
         console.log('🚪 [CONTEXT] User signed out');
-        dispatch({ type: 'LOGOUT' });
+        if (isMounted) {
+          dispatch({ type: 'LOGOUT' });
+        }
       }
     });
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
       // Clean up data manager subscriptions
       dataManager.cleanup();
       if (realtimeUnsubscribeRef.current) {
         realtimeUnsubscribeRef.current();
+        realtimeUnsubscribeRef.current = null;
       }
     };
   }, []);
@@ -379,29 +408,37 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
         payload: { user, profile, session }
       });
 
-      // Set up real-time subscriptions for user data
+      // Set up real-time subscriptions for user data (with cleanup)
       if (realtimeUnsubscribeRef.current) {
-        realtimeUnsubscribeRef.current();
+        try {
+          realtimeUnsubscribeRef.current();
+        } catch (error) {
+          console.warn('Error cleaning up previous realtime subscription:', error);
+        }
+        realtimeUnsubscribeRef.current = null;
       }
 
-      realtimeUnsubscribeRef.current = dataManager.subscribeToUserData(user.id, (payload) => {
-        console.log('📡 [REALTIME] User data updated:', payload);
-        // Refresh relevant data based on the table that changed
-        switch (payload.table) {
-          case 'borrowing_records':
-            loadBorrowingRecords();
-            break;
-          case 'reading_progress':
-            // Refresh reading progress
-            break;
-          case 'notifications':
-            // Refresh notifications
-            break;
-          case 'course_enrollments':
-            // Refresh course enrollments
-            break;
-        }
-      });
+      // Add a small delay to ensure previous subscriptions are cleaned up
+      setTimeout(() => {
+        realtimeUnsubscribeRef.current = dataManager.subscribeToUserData(user.id, (payload) => {
+          console.log('📡 [REALTIME] User data updated:', payload);
+          // Refresh relevant data based on the table that changed
+          switch (payload.table) {
+            case 'borrowing_records':
+              loadBorrowingRecords();
+              break;
+            case 'reading_progress':
+              // Refresh reading progress
+              break;
+            case 'notifications':
+              // Refresh notifications
+              break;
+            case 'course_enrollments':
+              // Refresh course enrollments
+              break;
+          }
+        });
+      }, 100);
     } catch (error) {
       let errorMessage = 'Authentication failed';
 
@@ -537,10 +574,20 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Use ref to store current user ID to prevent dependency issues
+  const currentUserIdRef = useRef<string | null>(null);
+  currentUserIdRef.current = state.user?.id || null;
+
   const loadDashboardStats = useCallback(async () => {
     try {
+      const userId = currentUserIdRef.current;
+      if (!userId) {
+        console.log('📊 [DASHBOARD_STATS] No user ID available, skipping stats load');
+        return;
+      }
+
       // Use enhanced data manager for real database stats
-      const { data: stats, error } = await dataManager.getDashboardStats(state.user?.id);
+      const { data: stats, error } = await dataManager.getDashboardStats(userId);
 
       if (error) {
         dispatch({ type: 'SET_ERROR', payload: error });
@@ -551,7 +598,7 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: (error as Error).message });
     }
-  }, [state.user]);
+  }, []); // No dependencies to prevent infinite loops
 
   // Book methods
   const createBook = async (bookData: CreateBookData) => {

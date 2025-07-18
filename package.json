@@ -12,7 +12,8 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "postinstall": "node scripts/fix-lucide-grape.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

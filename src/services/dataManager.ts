@@ -23,6 +23,7 @@ export interface CacheEntry<T> {
 class DataManager {
   private cache = new Map<string, CacheEntry<any>>();
   private subscriptions = new Map<string, any>();
+  private pendingRequests = new Map<string, Promise<any>>(); // Track pending requests
   private readonly CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 
   // ============================================================================
@@ -77,11 +78,31 @@ class DataManager {
     };
   }
 
+  // Clean up expired cache entries and pending requests
+  private cleanupCache() {
+    const now = Date.now();
+    for (const [key, entry] of this.cache.entries()) {
+      if (now > entry.expiry) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  // Clean up all resources
+  cleanup() {
+    this.cache.clear();
+    this.pendingRequests.clear();
+    this.subscriptions.forEach(unsub => {
+      if (typeof unsub === 'function') unsub();
+    });
+    this.subscriptions.clear();
+  }
+
   // ============================================================================
   // ENHANCED CRUD OPERATIONS WITH CACHING
   // ============================================================================
 
-  // Get data with caching
+  // Get data with caching and duplicate request prevention
   async getData<T>(
     key: string,
     fetcher: () => Promise<ApiResponse<T>>,
@@ -93,23 +114,54 @@ class DataManager {
     if (useCache) {
       const cached = this.cache.get(key);
       if (cached && Date.now() < cached.expiry) {
+        console.log('📦 [DATA_MANAGER] Cache hit for:', key);
         return { data: cached.data, error: null };
       }
     }
 
-    // Fetch from database
-    const result = await fetcher();
-
-    // Cache successful results
-    if (result.data && useCache) {
-      this.cache.set(key, {
-        data: result.data,
-        timestamp: Date.now(),
-        expiry: Date.now() + this.CACHE_EXPIRY
-      });
+    // Check if request is already pending
+    if (this.pendingRequests.has(key)) {
+      console.log('⏳ [DATA_MANAGER] Request already pending for:', key);
+      return this.pendingRequests.get(key)!;
     }
 
-    return result;
+    // Create new request
+    console.log('🔄 [DATA_MANAGER] Fetching data for:', key);
+    const requestPromise = this.executeRequest(key, fetcher, useCache);
+    this.pendingRequests.set(key, requestPromise);
+
+    try {
+      const result = await requestPromise;
+      return result;
+    } finally {
+      // Clean up pending request
+      this.pendingRequests.delete(key);
+    }
+  }
+
+  private async executeRequest<T>(
+    key: string,
+    fetcher: () => Promise<ApiResponse<T>>,
+    useCache: boolean
+  ): Promise<ApiResponse<T>> {
+    try {
+      // Fetch from database
+      const result = await fetcher();
+
+      // Cache successful results
+      if (result.data && useCache) {
+        this.cache.set(key, {
+          data: result.data,
+          timestamp: Date.now(),
+          expiry: Date.now() + this.CACHE_EXPIRY
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error('❌ [DATA_MANAGER] Request failed for:', key, error);
+      return { data: null, error: (error as Error).message };
+    }
   }
 
   // Save data with draft support
@@ -327,15 +379,6 @@ class DataManager {
   private async getCurrentUserId(): Promise<string> {
     const { data: { user } } = await supabase.auth.getUser();
     return user?.id || 'anonymous';
-  }
-
-
-
-  // Clean up subscriptions
-  cleanup(): void {
-    this.subscriptions.forEach(unsubscribe => unsubscribe());
-    this.subscriptions.clear();
-    this.cache.clear();
   }
 }
 

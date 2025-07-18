@@ -47,11 +47,17 @@ export function Profile() {
         >
           <div className="glass-card p-8 rounded-3xl text-center">
             <div className="relative inline-block mb-6">
-              <img
-                src={userProfile.avatar_url || '/default-avatar.png'}
-                alt={userProfile.full_name || 'User'}
-                className="w-24 h-24 rounded-full object-cover mx-auto border-4 border-white dark:border-gray-800"
-              />
+              {userProfile.avatar_url ? (
+                <img
+                  src={userProfile.avatar_url}
+                  alt={userProfile.full_name || 'User'}
+                  className="w-24 h-24 rounded-full object-cover mx-auto border-4 border-white dark:border-gray-800"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-white font-bold text-2xl mx-auto border-4 border-white dark:border-gray-800">
+                  {(userProfile.full_name || 'U').charAt(0).toUpperCase()}
+                </div>
+              )}
               <button className="absolute bottom-0 right-0 neomorph-button p-2 rounded-full hover:scale-105 transition-transform">
                 <Camera className="h-4 w-4 text-gray-600 dark:text-gray-400" />
               </button>
