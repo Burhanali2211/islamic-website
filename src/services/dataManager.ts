@@ -145,8 +145,16 @@ class DataManager {
     useCache: boolean
   ): Promise<ApiResponse<T>> {
     try {
+      console.log('🚀 [DATA_MANAGER] Executing fetcher for:', key);
+
       // Fetch from database
       const result = await fetcher();
+
+      console.log('📊 [DATA_MANAGER] Fetcher result for', key, ':', {
+        hasData: !!result.data,
+        dataLength: Array.isArray(result.data) ? result.data.length : 'not array',
+        error: result.error
+      });
 
       // Cache successful results
       if (result.data && useCache) {
@@ -155,6 +163,7 @@ class DataManager {
           timestamp: Date.now(),
           expiry: Date.now() + this.CACHE_EXPIRY
         });
+        console.log('💾 [DATA_MANAGER] Cached result for:', key);
       }
 
       return result;

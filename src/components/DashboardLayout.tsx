@@ -27,16 +27,16 @@ export function DashboardLayout() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Fixed on desktop, sliding on mobile */}
       <div className={`
-        fixed inset-y-0 left-0 z-[60] w-64 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:z-auto
+        fixed inset-y-0 left-0 z-[60] w-64 transform transition-transform duration-300 ease-in-out lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <Sidebar onClose={handleSidebarClose} />
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
+      {/* Main content - Add left margin on desktop to account for fixed sidebar */}
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
         <Header onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto">
           <div className="min-h-full">

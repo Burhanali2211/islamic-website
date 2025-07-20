@@ -62,10 +62,10 @@ export function ManageBorrowing() {
         const book = state.books.find(b => b.id === record.book_id);
         const user = state.users.find(u => u.id === record.user_id);
         return (
-          book?.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          book?.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          book?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          book?.author_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           user?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user?.email.toLowerCase().includes(searchQuery.toLowerCase())
+          user?.email?.toLowerCase().includes(searchQuery.toLowerCase())
         );
       });
     }

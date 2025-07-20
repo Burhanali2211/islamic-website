@@ -40,7 +40,9 @@ import { ActivityFeed } from '../../components/realtime/ActivityFeed';
 import { OnlineUsers } from '../../components/realtime/OnlineUsers';
 import { useRealtimeDashboard } from '../../hooks/useRealTime';
 
+
 export function AdminDashboard() {
+
   const { state, loadDashboardStats, loadBooks, loadUsers, loadBorrowingRecords } = useSupabaseApp();
 
   // Real-time dashboard hook
@@ -91,7 +93,7 @@ export function AdminDashboard() {
       setIsLoading(false);
       isLoadingRef.current = false; // Reset loading flag
     }
-  }, [loadDashboardStats, loadBooks, loadUsers, loadBorrowingRecords]);
+  }, []); // ✅ FIXED: Empty dependency array since context functions are stable
 
   // Initial load
   useEffect(() => {

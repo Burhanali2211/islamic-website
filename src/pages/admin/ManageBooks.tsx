@@ -129,6 +129,12 @@ export function ManageBooks() {
   }, [deleteBook]);
 
   const handleSearch = async () => {
+    // Prevent multiple simultaneous requests
+    if (isLoading) {
+      console.log('Search already in progress, skipping...');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const filters: BookFilters = {
@@ -197,21 +203,33 @@ export function ManageBooks() {
   };
 
   const filteredBooks = useMemo(() => {
+    // ✅ FIXED: Add null check and ensure books is an array
+    if (!state.books || !Array.isArray(state.books)) {
+      return [];
+    }
+
     let books = [...state.books];
 
-    // Search filter
+    // Search filter with null checks
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      books = books.filter(book =>
-        book.title.toLowerCase().includes(query) ||
-        book.author.toLowerCase().includes(query) ||
-        book.title_arabic?.includes(searchQuery) ||
-        book.author_arabic?.includes(searchQuery) ||
-        book.description?.toLowerCase().includes(query) ||
-        book.isbn?.toLowerCase().includes(query) ||
-        book.publisher?.toLowerCase().includes(query) ||
-        book.tags?.some(tag => tag.toLowerCase().includes(query))
-      );
+      books = books.filter(book => {
+        try {
+          return (
+            book.title?.toLowerCase().includes(query) ||
+            book.author_name?.toLowerCase().includes(query) ||
+            book.title_arabic?.includes(searchQuery) ||
+            book.author_arabic?.includes(searchQuery) ||
+            book.description?.toLowerCase().includes(query) ||
+            book.isbn?.toLowerCase().includes(query) ||
+            book.publisher_name?.toLowerCase().includes(query) ||
+            book.tags?.some(tag => tag?.toLowerCase().includes(query))
+          );
+        } catch (error) {
+          console.warn('Error filtering book:', book.id, error);
+          return false;
+        }
+      });
     }
 
     // Category filter
@@ -224,13 +242,20 @@ export function ManageBooks() {
       books = books.filter(book => book.language === selectedLanguage);
     }
 
-    // Author filter
+    // Author filter with null checks
     if (selectedAuthor) {
       const author = selectedAuthor.toLowerCase();
-      books = books.filter(book =>
-        book.author.toLowerCase().includes(author) ||
-        book.author_arabic?.includes(selectedAuthor)
-      );
+      books = books.filter(book => {
+        try {
+          return (
+            book.author_name?.toLowerCase().includes(author) ||
+            book.author_arabic?.includes(selectedAuthor)
+          );
+        } catch (error) {
+          console.warn('Error filtering book by author:', book.id, error);
+          return false;
+        }
+      });
     }
 
     // Availability filter
@@ -247,43 +272,48 @@ export function ManageBooks() {
       );
     }
 
-    // Sorting
+    // Sorting with null checks
     books.sort((a, b) => {
-      let aValue: any, bValue: any;
+      try {
+        let aValue: any, bValue: any;
 
-      switch (sortBy) {
-        case 'title':
-          aValue = a.title.toLowerCase();
-          bValue = b.title.toLowerCase();
-          break;
-        case 'author':
-          aValue = a.author.toLowerCase();
-          bValue = b.author.toLowerCase();
-          break;
-        case 'category':
-          aValue = a.category;
-          bValue = b.category;
-          break;
-        case 'created_at':
-          aValue = new Date(a.created_at || 0);
-          bValue = new Date(b.created_at || 0);
-          break;
-        case 'pages':
-          aValue = a.pages || 0;
-          bValue = b.pages || 0;
-          break;
-        case 'rating':
-          aValue = a.rating || 0;
-          bValue = b.rating || 0;
-          break;
-        default:
-          aValue = a.title.toLowerCase();
-          bValue = b.title.toLowerCase();
+        switch (sortBy) {
+          case 'title':
+            aValue = a.title?.toLowerCase() || '';
+            bValue = b.title?.toLowerCase() || '';
+            break;
+          case 'author':
+            aValue = a.author_name?.toLowerCase() || '';
+            bValue = b.author_name?.toLowerCase() || '';
+            break;
+          case 'category':
+            aValue = a.category || '';
+            bValue = b.category || '';
+            break;
+          case 'created_at':
+            aValue = new Date(a.created_at || 0);
+            bValue = new Date(b.created_at || 0);
+            break;
+          case 'pages':
+            aValue = a.pages || 0;
+            bValue = b.pages || 0;
+            break;
+          case 'rating':
+            aValue = a.rating || 0;
+            bValue = b.rating || 0;
+            break;
+          default:
+            aValue = a.title?.toLowerCase() || '';
+            bValue = b.title?.toLowerCase() || '';
+        }
+
+        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      } catch (error) {
+        console.warn('Error sorting books:', error);
+        return 0;
       }
-
-      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
     });
 
     return books;
@@ -305,13 +335,15 @@ export function ManageBooks() {
   const endIndex = startIndex + itemsPerPage;
   const paginatedBooks = filteredBooks.slice(startIndex, endIndex);
 
-  // Get unique authors for filter dropdown
+  // Get unique authors for filter dropdown with null checks
   const uniqueAuthors = useMemo(() => {
     const authors = new Set<string>();
-    state.books.forEach(book => {
-      authors.add(book.author_name);
-      if (book.author_arabic) authors.add(book.author_arabic);
-    });
+    if (state.books && Array.isArray(state.books)) {
+      state.books.forEach(book => {
+        if (book.author_name) authors.add(book.author_name);
+        if (book.author_arabic) authors.add(book.author_arabic);
+      });
+    }
     return Array.from(authors).sort();
   }, [state.books]);
 

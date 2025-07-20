@@ -69,10 +69,19 @@ class BooksService {
 
       const { data, error, count } = await query;
 
+      console.log('📚 [BOOKS_SERVICE] Query result:', {
+        dataLength: data?.length || 0,
+        count,
+        error: error?.message,
+        filters
+      });
+
       if (error) {
+        console.error('❌ [BOOKS_SERVICE] Database error:', error);
         return { data: null, error: error.message };
       }
 
+      console.log('✅ [BOOKS_SERVICE] Books fetched successfully:', data?.length || 0, 'books');
       return { data, error: null, count: count || 0 };
     } catch (error) {
       return { data: null, error: (error as Error).message };

@@ -16,7 +16,7 @@ import { dataManager } from '../../services/dataManager';
 import { booksService } from '../../services/books';
 import { usersService } from '../../services/users';
 import { borrowingService } from '../../services/borrowing';
-import { useFormAutoSave, useDraftManager } from '../../hooks/useFormAutoSave';
+
 import { errorHandler } from '../../services/errorHandler';
 import { NotificationCenter } from '../notifications/NotificationCenter';
 import type { Book, User } from '../../types';
@@ -33,8 +33,7 @@ export function EnhancedAdminDashboard() {
   // Prevent duplicate loading with ref
   const isLoadingRef = useRef(false);
 
-  // Draft management for new book form
-  const { saveDraft, loadDraft, clearDraft } = useDraftManager('book');
+
 
   // Load dashboard data with enhanced error handling and duplicate prevention
   const loadDashboardData = async () => {
@@ -149,16 +148,12 @@ export function EnhancedAdminDashboard() {
     loadDashboardData();
   }, []);
 
-  // Handle book creation with draft support
+  // Handle book creation
   const handleCreateBook = async (bookData: Partial<Book>) => {
     try {
-      // Save as draft first
-      const draftId = `new-book-${Date.now()}`;
-      saveDraft(draftId, bookData);
-
-      // Create in database with enhanced error handling
+      // Create in database
       const result = await dataManager.saveData(
-        draftId,
+        `new-book-${Date.now()}`,
         bookData,
         (data) => booksService.createBook(data),
         { autoSave: true }
@@ -167,9 +162,6 @@ export function EnhancedAdminDashboard() {
       if (result.error) {
         throw new Error(result.error);
       }
-
-      // Clear draft on success
-      clearDraft(draftId);
       
       // Refresh data
       loadDashboardData();

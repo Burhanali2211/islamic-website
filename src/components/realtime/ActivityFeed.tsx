@@ -37,20 +37,31 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   compact = false,
   className = ''
 }) => {
+  // ✅ FIXED: Add debugging log to track re-renders
+  console.log("ActivityFeed render triggered");
+
   const { activities, clearActivities } = useRealtimeActivity();
   const [isPaused, setIsPaused] = useState(false);
   const [filter, setFilter] = useState<string>('all');
   const [isExpanded, setIsExpanded] = useState(true);
   const [displayedActivities, setDisplayedActivities] = useState<any[]>([]);
 
-  // Filter activities
-  const filteredActivities = activities.filter(activity => {
-    if (filter === 'all') return true;
-    return activity.type === filter;
-  });
+  // ✅ FIXED: Memoize filtered activities to prevent infinite re-renders
+  const filteredActivities = React.useMemo(() => {
+    return activities.filter(activity => {
+      if (filter === 'all') return true;
+      return activity.type === filter;
+    });
+  }, [activities, filter]);
 
-  // Update displayed activities when not paused
+  // ✅ FIXED: Update displayed activities when not paused with proper dependency array
   useEffect(() => {
+    console.log("ActivityFeed useEffect triggered - updating displayed activities", {
+      isPaused,
+      filteredCount: filteredActivities.length,
+      maxItems
+    });
+
     if (!isPaused) {
       setDisplayedActivities(filteredActivities.slice(0, maxItems));
     }

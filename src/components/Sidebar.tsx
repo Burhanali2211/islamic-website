@@ -127,7 +127,7 @@ export function Sidebar({ onClose }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 px-3 sm:px-4 lg:px-6 py-3 sm:py-4 overflow-y-auto">
+      <div className="flex-1 px-3 sm:px-4 lg:px-6 py-3 sm:py-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
         <nav className="space-y-1 sm:space-y-2">
           {renderMenuItems(navItems)}
         </nav>

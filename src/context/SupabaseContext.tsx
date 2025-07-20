@@ -31,26 +31,27 @@ interface SupabaseAppState {
   user: SupabaseUser | null;
   profile: IslamicProfile | null;
   session: Session | null;
-  
+  isInitialized: boolean;
+
   // Data
   books: Book[];
   users: User[];
   borrowingRecords: BorrowingRecord[];
   categories: IslamicCategory[];
-  
+
   // UI State
   theme: Theme;
   searchQuery: string;
   selectedCategory: string;
   isLoading: boolean;
-  
+
   // User specific
   bookmarks: string[];
   recentReads: string[];
-  
+
   // Dashboard stats
   dashboardStats: DashboardStats | null;
-  
+
   // Error handling
   error: string | null;
 }
@@ -58,6 +59,7 @@ interface SupabaseAppState {
 type SupabaseAppAction =
   // Authentication actions
   | { type: 'SET_AUTH'; payload: { user: SupabaseUser | null; profile: IslamicProfile | null; session: Session | null } }
+  | { type: 'SET_INITIALIZED'; payload: boolean }
   | { type: 'LOGOUT' }
   
   // Data actions
@@ -100,6 +102,7 @@ const initialState: SupabaseAppState = {
   user: null,
   profile: null,
   session: null,
+  isInitialized: false,
   books: [],
   users: [],
   borrowingRecords: [],
@@ -194,7 +197,10 @@ function supabaseAppReducer(state: SupabaseAppState, action: SupabaseAppAction):
         profile: action.payload.profile,
         session: action.payload.session,
         bookmarks: action.payload.profile?.bookmarks || [],
-        recentReads: action.payload.profile?.recent_reads || []
+        recentReads: action.payload.profile?.recent_reads || [],
+        // ✅ FIXED: Reset loading and error states when auth is set
+        isLoading: false,
+        error: null
       };
 
       console.log('✅ [REDUCER] New auth state created:', {
@@ -213,8 +219,16 @@ function supabaseAppReducer(state: SupabaseAppState, action: SupabaseAppAction):
         user: null,
         profile: null,
         session: null,
+        isInitialized: false,
         bookmarks: [],
         recentReads: []
+      };
+
+    case 'SET_INITIALIZED':
+      console.log('🔧 [REDUCER] SET_INITIALIZED action received:', action.payload);
+      return {
+        ...state,
+        isInitialized: action.payload
       };
 
     case 'SET_BOOKS':
@@ -321,6 +335,7 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
         console.log('🔄 [CONTEXT] Setting initial loading to false');
         if (isMounted) {
           dispatch({ type: 'SET_LOADING', payload: false });
+          dispatch({ type: 'SET_INITIALIZED', payload: true });
         }
       }
     };
@@ -334,13 +349,29 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
       console.log('🔔 [CONTEXT] Auth state change event:', { event, hasSession: !!session, userEmail: session?.user?.email });
 
       if (event === 'SIGNED_IN' && session?.user) {
-        console.log('👤 [CONTEXT] User signed in, fetching profile...');
-        const profile = await authService.getProfile(session.user.id);
+        console.log('👤 [CONTEXT] User signed in, setting session immediately...');
+
+        // Set session immediately to enable data loading
         if (isMounted) {
           dispatch({
             type: 'SET_AUTH',
-            payload: { user: session.user, profile, session }
+            payload: { user: session.user, profile: null, session }
           });
+        }
+
+        // Fetch profile separately (don't block session setting)
+        console.log('🔍 [CONTEXT] Fetching profile in background...');
+        try {
+          const profile = await authService.getProfile(session.user.id);
+          if (isMounted && profile) {
+            dispatch({
+              type: 'SET_AUTH',
+              payload: { user: session.user, profile, session }
+            });
+            console.log('✅ [CONTEXT] Profile loaded and updated');
+          }
+        } catch (error) {
+          console.error('⚠️ [CONTEXT] Profile fetch failed, but session is still valid:', error);
         }
       } else if (event === 'SIGNED_OUT') {
         console.log('🚪 [CONTEXT] User signed out');
@@ -916,6 +947,47 @@ export function SupabaseAppProvider({ children }: { children: ReactNode }) {
   const clearDraft = useCallback((type: string, id: string) => {
     return localStorageService.deleteDraft(type, id);
   }, []);
+
+  // Load books when session is available (don't wait for profile)
+  useEffect(() => {
+    // Only load books if session exists (for RLS policies)
+    if (!state.session) {
+      console.log('⏳ [CONTEXT] Waiting for session before loading books...');
+      return;
+    }
+
+    console.log('📚 [CONTEXT] Session available, loading books...');
+
+    const loadBooksData = async () => {
+      try {
+        console.log('📖 [CONTEXT] Loading books with authenticated session...');
+        await loadBooks();
+        console.log('✅ [CONTEXT] Books loaded successfully');
+      } catch (error) {
+        console.error('💥 [CONTEXT] Error loading books:', error);
+        dispatch({ type: 'SET_ERROR', payload: 'Failed to load books' });
+      }
+    };
+
+    loadBooksData();
+  }, [state.session, loadBooks]);
+
+  // Load categories (these should work without auth)
+  useEffect(() => {
+    console.log('🏷️ [CONTEXT] Loading categories...');
+
+    const loadCategoriesData = async () => {
+      try {
+        await loadCategories();
+        console.log('✅ [CONTEXT] Categories loaded successfully');
+      } catch (error) {
+        console.error('💥 [CONTEXT] Error loading categories:', error);
+        dispatch({ type: 'SET_ERROR', payload: 'Failed to load categories' });
+      }
+    };
+
+    loadCategoriesData();
+  }, [loadCategories]);
 
   return (
     <SupabaseAppContext.Provider value={{

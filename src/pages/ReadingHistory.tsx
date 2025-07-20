@@ -39,8 +39,8 @@ export function ReadingHistory() {
   ].filter(item => item.book);
 
   const filteredHistory = readingHistory.filter(item => {
-    const matchesSearch = item.book?.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.book?.author.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = item.book?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         item.book?.author_name?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = filterBy === 'all' || item.status === filterBy;
     return matchesSearch && matchesFilter;
   });

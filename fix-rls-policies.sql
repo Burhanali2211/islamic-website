@@ -1,84 +1,185 @@
--- Fix RLS policies to avoid infinite recursion
--- Drop existing problematic policies
-DROP POLICY IF EXISTS "Admins can view all profiles" ON profiles;
-DROP POLICY IF EXISTS "Admins can update all profiles" ON profiles;
-DROP POLICY IF EXISTS "Admins can insert profiles" ON profiles;
-DROP POLICY IF EXISTS "Admins can delete profiles" ON profiles;
+-- Quick fix for RLS policies to allow books to be viewed by everyone
+-- and allow admins to manage books
 
--- Create helper functions that don't cause recursion
-CREATE OR REPLACE FUNCTION auth.user_role()
-RETURNS TEXT
-LANGUAGE SQL
-SECURITY DEFINER
-AS $$
-  SELECT COALESCE(
-    (auth.jwt() ->> 'user_metadata' ->> 'role'),
-    (auth.jwt() ->> 'app_metadata' ->> 'role'),
-    'student'
-  );
-$$;
+-- ============================================================================
+-- FIX BOOKS TABLE POLICIES
+-- ============================================================================
 
--- Function to check if current user is admin
-CREATE OR REPLACE FUNCTION is_admin(user_id UUID DEFAULT auth.uid())
-RETURNS BOOLEAN
-LANGUAGE SQL
-SECURITY DEFINER
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM auth.users 
-    WHERE id = user_id 
-    AND (
-      raw_user_meta_data ->> 'role' = 'admin' OR
-      raw_app_meta_data ->> 'role' = 'admin'
+-- Drop existing restrictive policies
+DROP POLICY IF EXISTS "Authenticated users can view books" ON books;
+DROP POLICY IF EXISTS "Anyone can view books" ON books;
+DROP POLICY IF EXISTS "Admins can insert books" ON books;
+DROP POLICY IF EXISTS "Admins can update books" ON books;
+DROP POLICY IF EXISTS "Admins can delete books" ON books;
+
+-- Allow everyone to view books (no authentication required)
+CREATE POLICY "Anyone can view books" ON books
+FOR SELECT USING (true);
+
+-- Admins can insert books
+CREATE POLICY "Admins can insert books" ON books
+FOR INSERT WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM profiles p
+        WHERE p.id = auth.uid()
+        AND p.role = 'admin'
     )
-  );
-$$;
+);
 
--- Function to check if current user is teacher or admin
-CREATE OR REPLACE FUNCTION is_teacher_or_admin(user_id UUID DEFAULT auth.uid())
-RETURNS BOOLEAN
-LANGUAGE SQL
-SECURITY DEFINER
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM auth.users 
-    WHERE id = user_id 
-    AND (
-      raw_user_meta_data ->> 'role' IN ('admin', 'teacher') OR
-      raw_app_meta_data ->> 'role' IN ('admin', 'teacher')
+-- Admins can update books
+CREATE POLICY "Admins can update books" ON books
+FOR UPDATE USING (
+    EXISTS (
+        SELECT 1 FROM profiles p
+        WHERE p.id = auth.uid()
+        AND p.role = 'admin'
     )
-  );
-$$;
-
--- Function to check if current user is teacher
-CREATE OR REPLACE FUNCTION is_teacher(user_id UUID DEFAULT auth.uid())
-RETURNS BOOLEAN
-LANGUAGE SQL
-SECURITY DEFINER
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM auth.users 
-    WHERE id = user_id 
-    AND (
-      raw_user_meta_data ->> 'role' = 'teacher' OR
-      raw_app_meta_data ->> 'role' = 'teacher'
+) WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM profiles p
+        WHERE p.id = auth.uid()
+        AND p.role = 'admin'
     )
-  );
-$$;
+);
 
--- Create new RLS policies using the helper functions
-CREATE POLICY "Admins can view all profiles" ON profiles 
-FOR SELECT USING (is_admin());
+-- Admins can delete books
+CREATE POLICY "Admins can delete books" ON books
+FOR DELETE USING (
+    EXISTS (
+        SELECT 1 FROM profiles p
+        WHERE p.id = auth.uid()
+        AND p.role = 'admin'
+    )
+);
 
-CREATE POLICY "Admins can update all profiles" ON profiles 
-FOR UPDATE USING (is_admin());
+-- ============================================================================
+-- FIX CATEGORIES TABLE POLICIES
+-- ============================================================================
 
-CREATE POLICY "Admins can insert profiles" ON profiles 
-FOR INSERT WITH CHECK (is_admin());
+-- Drop existing restrictive policies
+DROP POLICY IF EXISTS "Everyone can view categories" ON categories;
+DROP POLICY IF EXISTS "Admins can manage categories" ON categories;
 
-CREATE POLICY "Admins can delete profiles" ON profiles 
-FOR DELETE USING (is_admin());
+-- Allow everyone to view categories (no authentication required)
+CREATE POLICY "Anyone can view categories" ON categories
+FOR SELECT USING (true);
 
--- Also allow teachers to view profiles for their classes
-CREATE POLICY "Teachers can view student profiles" ON profiles 
-FOR SELECT USING (is_teacher_or_admin() AND role = 'student');
+-- Only admins can manage categories
+CREATE POLICY "Admins can insert categories" ON categories
+FOR INSERT WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM profiles p
+        WHERE p.id = auth.uid()
+        AND p.role = 'admin'
+    )
+);
+
+CREATE POLICY "Admins can update categories" ON categories
+FOR UPDATE USING (
+    EXISTS (
+        SELECT 1 FROM profiles p
+        WHERE p.id = auth.uid()
+        AND p.role = 'admin'
+    )
+) WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM profiles p
+        WHERE p.id = auth.uid()
+        AND p.role = 'admin'
+    )
+);
+
+CREATE POLICY "Admins can delete categories" ON categories
+FOR DELETE USING (
+    EXISTS (
+        SELECT 1 FROM profiles p
+        WHERE p.id = auth.uid()
+        AND p.role = 'admin'
+    )
+);
+
+-- ============================================================================
+-- ADD SOME TEST DATA
+-- ============================================================================
+
+-- Insert some test books to verify the system is working
+INSERT INTO books (
+    title,
+    title_arabic,
+    author_name,
+    author_arabic,
+    category,
+    description,
+    description_arabic,
+    language,
+    pages,
+    is_featured,
+    is_available,
+    physical_copies,
+    rating,
+    download_count,
+    tags
+) VALUES 
+(
+    'Sahih Al-Bukhari',
+    'صحيح البخاري',
+    'Imam Muhammad al-Bukhari',
+    'الإمام محمد البخاري',
+    'hadith',
+    'The most authentic collection of Prophetic traditions, compiled by Imam al-Bukhari.',
+    'أصح مجموعة من الأحاديث النبوية الشريفة، جمعها الإمام البخاري.',
+    'ar',
+    2000,
+    true,
+    true,
+    5,
+    4.9,
+    1250,
+    ARRAY['hadith', 'authentic', 'bukhari', 'sunnah']
+),
+(
+    'Tafseer Ibn Kathir',
+    'تفسير ابن كثير',
+    'Ibn Kathir',
+    'ابن كثير',
+    'tafsir',
+    'A comprehensive commentary on the Holy Quran by the renowned scholar Ibn Kathir.',
+    'تفسير شامل للقرآن الكريم من قبل العالم الجليل ابن كثير.',
+    'ar',
+    3500,
+    true,
+    true,
+    3,
+    4.8,
+    980,
+    ARRAY['tafsir', 'quran', 'commentary', 'ibn kathir']
+),
+(
+    'Riyadh as-Salihin',
+    'رياض الصالحين',
+    'Imam an-Nawawi',
+    'الإمام النووي',
+    'hadith',
+    'A collection of authentic hadiths compiled by Imam an-Nawawi for spiritual development.',
+    'مجموعة من الأحاديث الصحيحة جمعها الإمام النووي للتطوير الروحي.',
+    'ar',
+    800,
+    true,
+    true,
+    7,
+    4.7,
+    1500,
+    ARRAY['hadith', 'nawawi', 'spiritual', 'development']
+)
+ON CONFLICT DO NOTHING;
+
+-- Insert some test categories if they don't exist
+INSERT INTO categories (name, name_arabic, category_type, sort_order, description) VALUES
+('Holy Quran', 'القرآن الكريم', 'quran', 1, 'The Holy Quran and related studies'),
+('Hadith', 'الحديث الشريف', 'hadith', 2, 'Prophetic traditions and sayings'),
+('Islamic Jurisprudence', 'الفقه', 'fiqh', 3, 'Islamic law and jurisprudence'),
+('Quranic Commentary', 'التفسير', 'tafsir', 4, 'Commentary and interpretation of the Quran'),
+('Islamic Creed', 'العقيدة', 'aqeedah', 5, 'Islamic beliefs and theology'),
+('Prophetic Biography', 'السيرة النبوية', 'seerah', 6, 'Life and biography of Prophet Muhammad'),
+('Islamic History', 'التاريخ الإسلامي', 'history', 7, 'History of Islam and Muslims')
+ON CONFLICT (name) DO NOTHING;

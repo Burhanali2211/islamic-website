@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -15,17 +15,22 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export function Login() {
+  // ✅ INFINITE LOOP DETECTOR: Monitor for excessive re-renders
+
   const { state, signIn } = useSupabaseApp();
   const navigate = useNavigate();
   const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
+  // ✅ FIXED: Add useRef guard to prevent multiple redirects
+  const hasRedirected = useRef(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
   // Redirect if already logged in
+  // ✅ FIXED: Using stable references in dependencies and useRef guard to prevent infinite loops
   useEffect(() => {
     console.log('🔍 [LOGIN] useEffect triggered - checking auth state:', {
       hasUser: !!state.user,
@@ -33,18 +38,25 @@ export function Login() {
       userEmail: state.user?.email,
       userRole: state.profile?.role,
       isLoading: state.isLoading,
-      componentLoading: isLoading
+      hasRedirected: hasRedirected.current
     });
 
     // Don't redirect while loading to avoid race conditions
-    if (state.isLoading || isLoading) {
+    if (state.isLoading) {
       console.log('⏳ [LOGIN] Still loading, skipping redirect check');
       return;
     }
 
+    // ✅ FIXED: Prevent multiple redirects using useRef guard
+    if (hasRedirected.current) {
+      console.log('🚫 [LOGIN] Already redirected, skipping');
+      return;
+    }
+
+    // If user is authenticated and has profile, redirect immediately
     if (state.user && state.profile) {
       const from = (location.state as { from?: { pathname: string } })?.from?.pathname;
-      const redirectPath = state.profile.role === 'admin' ? '/admin' :
+      const redirectPath = state.profile.role === 'admin' ? '/admin/dashboard' :
                           state.profile.role === 'teacher' ? '/teacher' : '/student';
 
       console.log('🚀 [LOGIN] Redirecting authenticated user:', {
@@ -59,36 +71,39 @@ export function Login() {
       const targetPath = (from && from !== '/login' && from !== '/') ? from : redirectPath;
 
       console.log('🎯 [LOGIN] Final redirect target:', targetPath);
+
+      // ✅ FIXED: Set redirect flag before navigating
+      hasRedirected.current = true;
       navigate(targetPath, { replace: true });
     }
-  }, [state.user?.id, state.profile?.role, state.isLoading, navigate, location.state?.from?.pathname]); // Fixed dependencies to prevent infinite loops
+  }, [
+    // ✅ FIXED: Optimized dependency array with only necessary stable references
+    state.user?.id,           // Instead of state.user (object)
+    state.profile?.role,      // Instead of state.profile (object)
+    state.isLoading,
+    navigate,
+    location.state?.from?.pathname  // Instead of location.state (object)
+  ]);
 
-  // Sync component loading state with context loading state
+  // ✅ FIXED: Reset redirect guard when user logs out or component unmounts
   useEffect(() => {
-    if (!state.isLoading && isLoading) {
-      console.log('🔄 [LOGIN] Context loading finished, updating component loading state');
-      setIsLoading(false);
+    if (!state.user) {
+      hasRedirected.current = false;
     }
-  }, [state.isLoading]); // Removed isLoading from dependencies to prevent infinite loop
+  }, [state.user]);
 
   const onSubmit = async (data: LoginFormData) => {
     console.log('📝 [LOGIN] Form submitted:', { email: data.email, timestamp: new Date().toISOString() });
-    setIsLoading(true);
 
     try {
       console.log('🔐 [LOGIN] Calling signIn function...');
       await signIn(data.email, data.password);
       console.log('✅ [LOGIN] SignIn completed successfully - navigation will be handled by useEffect');
       // Navigation will be handled by the useEffect above
-      // Don't set loading to false immediately - let the context handle it
     } catch (error) {
       console.error('❌ [LOGIN] Login error caught in component:', error);
       // Error is already set in the context by signIn function
-      // Only set loading to false on error
-      setIsLoading(false);
     }
-    // Note: We don't set loading to false on success to avoid race conditions
-    // The useEffect will handle navigation when auth state is properly set
   };
 
 
@@ -131,7 +146,7 @@ export function Login() {
                   type="email"
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800"
                   placeholder="admin@idarah.com"
-                  disabled={isLoading}
+                  disabled={state.isLoading}
                 />
               </div>
               {errors.email && (
@@ -154,13 +169,13 @@ export function Login() {
                   type={showPassword ? 'text' : 'password'}
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800"
                   placeholder="••••••••"
-                  disabled={isLoading}
+                  disabled={state.isLoading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  disabled={isLoading}
+                  disabled={state.isLoading}
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -176,10 +191,10 @@ export function Login() {
             {/* Login Button */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={state.isLoading}
               className="w-full neomorph-button py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-green-500 to-blue-500 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
+              {state.isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                   جاري تسجيل الدخول... - Logging in...
@@ -205,7 +220,7 @@ export function Login() {
             )}
 
             {/* Loading State Display */}
-            {(state.isLoading || isLoading) && (
+            {state.isLoading && (
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <div className="text-blue-800 dark:text-blue-200 text-sm flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>

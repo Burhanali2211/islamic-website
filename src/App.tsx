@@ -10,6 +10,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 
 // UI Components
 import { AnimatedBackground } from './components/ui/AnimatedBackground';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Loading component
 const LoadingSpinner = () => (
@@ -29,8 +30,7 @@ const Login = React.lazy(() => import('./pages/Login').then(module => ({ default
 const Register = React.lazy(() => import('./pages/Register').then(module => ({ default: module.Register })));
 const NotFound = React.lazy(() => import('./pages/NotFound').then(module => ({ default: module.NotFound })));
 
-// Test component
-const AuthTest = React.lazy(() => import('./components/AuthTest').then(module => ({ default: module.AuthTest })));
+
 
 // Lazy load student pages
 const StudentDashboard = React.lazy(() => import('./pages/StudentDashboard').then(module => ({ default: module.StudentDashboard })));
@@ -76,7 +76,6 @@ function AnimatedRoutes() {
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/auth-test" element={<AuthTest />} />
 
         {/* Dashboard Routes */}
         <Route element={<DashboardLayout />}>
@@ -98,7 +97,7 @@ function AnimatedRoutes() {
           {/* Admin Routes */}
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/admin/books" element={<ProtectedRoute allowedRoles={['admin']}><ManageBooks /></ProtectedRoute>} />
+          <Route path="/admin/books" element={<ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><ManageBooks /></ErrorBoundary></ProtectedRoute>} />
           <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><ManageUsers /></ProtectedRoute>} />
           <Route path="/admin/borrowing" element={<ProtectedRoute allowedRoles={['admin']}><ManageBorrowing /></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={['admin']}><AdminSettings /></ProtectedRoute>} />
